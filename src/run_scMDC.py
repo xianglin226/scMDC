@@ -46,6 +46,7 @@ if __name__ == "__main__":
     parser.add_argument('--prediction_file', default=-1)
     parser.add_argument('-l1','--encodeLayer1', nargs='+', default=[256,128,64])
     parser.add_argument('-l2','--encodeLayer2', nargs='+', default=[8])
+    parser.add_argument('-l3','--encodeLayer3', nargs='+', default=[64,16])
     parser.add_argument('--sigma1', default=2.5, type=float)
     parser.add_argument('--sigma2', default=.1, type=float)
 
@@ -94,6 +95,7 @@ if __name__ == "__main__":
     print(adata2.X.shape)
     print(y.shape)
     
+    #get layers
     encodeLayer1 = list(map(int, args.encodeLayer1))
     decodeLayer1 = encodeLayer1[::-1]
     encodeLayer2 = list(map(int, args.encodeLayer2))
@@ -101,9 +103,11 @@ if __name__ == "__main__":
        decodeLayer2 = encodeLayer2[::-1]
     else:
        decodeLayer2 = encodeLayer2
-       
+    encodeLayer3 = list(map(int, args.encodeLayer3))
+    decodeLayer3 = encodeLayer3[::-1]  
+    
     model = scMultiCluster(input_dim1=input_size1, input_dim2=input_size2,
-                        zencode_dim=[64, 16], zdecode_dim=[16, 64], 
+                        zencode_dim=encodeLayer3, zdecode_dim=decodeLayer3, 
                         encodeLayer1=encodeLayer1, decodeLayer1=decodeLayer1, encodeLayer2=encodeLayer2, decodeLayer2=decodeLayer2,
                         sigma1=args.sigma1, sigma2=args.sigma2, gamma1=args.gamma1, gamma2=args.gamma2, gamma3=args.gamma3, cutoff = args.cutoff).cuda()
     
