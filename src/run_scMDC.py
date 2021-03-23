@@ -50,6 +50,7 @@ if __name__ == "__main__":
     parser.add_argument('--sigma1', default=2.5, type=float)
     parser.add_argument('--sigma2', default=.1, type=float)
 
+    #Load and preprocess data
     args = parser.parse_args()
     print(args.gamma1)
     print(args.gamma2)
@@ -106,13 +107,15 @@ if __name__ == "__main__":
     encodeLayer3 = list(map(int, args.encodeLayer3))
     decodeLayer3 = encodeLayer3[::-1]  
     
+    #build H-AE model
     model = scMultiCluster(input_dim1=input_size1, input_dim2=input_size2,
                         zencode_dim=encodeLayer3, zdecode_dim=decodeLayer3, 
                         encodeLayer1=encodeLayer1, decodeLayer1=decodeLayer1, encodeLayer2=encodeLayer2, decodeLayer2=decodeLayer2,
                         sigma1=args.sigma1, sigma2=args.sigma2, gamma1=args.gamma1, gamma2=args.gamma2, gamma3=args.gamma3, cutoff = args.cutoff).cuda()
     
     print(str(model))
-
+    
+    #Pretrain stage
     t0 = time()
     if args.ae_weights is None:
         model.pretrain_autoencoder(X1=adata1.X, X_raw1=adata1.raw.X, sf1=adata1.obs.size_factors, X2=adata2.X, X_raw2=adata2.raw.X, sf2=adata2.obs.size_factors, batch_size=args.batch_size, epochs=args.pretrain_epochs, ae_weights=args.ae_weight_file)
@@ -130,14 +133,15 @@ if __name__ == "__main__":
     if not os.path.exists(args.save_dir):
             os.makedirs(args.save_dir)
     
-    #get k
+    #Estimate k
     latent = model.encodeBatch(torch.tensor(adata1.X).cuda(), torch.tensor(adata2.X).cuda()).cpu().numpy()
     if args.n_clusters == -1:
        n_clusters = GetCluster(latent, res=args.resolution, n=args.n_neighbors)
     else:
        print("n_cluster is defined as " + str(args.n_clusters))
        n_clusters = args.n_clusters
-
+    
+    #Clustering stage
     y_pred, _, _, _, _ = model.fit(X1=adata1.X, X_raw1=adata1.raw.X, sf1=adata1.obs.size_factors, X2=adata2.X, X_raw2=adata2.raw.X, sf2=adata2.obs.size_factors, y=y, n_clusters=n_clusters, batch_size=args.batch_size, num_epochs=args.maxiter, update_interval=args.update_interval, tol=args.tol, save_dir=args.save_dir)
     print('Total time: %d seconds.' % int(time() - t0))
     
@@ -147,11 +151,7 @@ if __name__ == "__main__":
     if args.embedding_file != -1:
        final_latent = model.encodeBatch(torch.tensor(adata1.X).cuda(), torch.tensor(adata2.X).cuda()).cpu().numpy()
        np.savetxt(args.embedding_file + "_embedding.csv", final_latent, delimiter=",")
-
     
-    y_f = y[y!=8]
-    y_pred = y_pred[y!=8]
-    print(y_pred.shape)
     acc = np.round(cluster_acc(y_f, y_pred), 5)
     nmi = np.round(metrics.normalized_mutual_info_score(y_f, y_pred), 5)
     ari = np.round(metrics.adjusted_rand_score(y_f, y_pred), 5)
