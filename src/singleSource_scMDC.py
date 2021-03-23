@@ -129,28 +129,11 @@ class scMultiCluster(nn.Module):
         use_cuda = torch.cuda.is_available()
         if use_cuda:
             self.cuda()
-        h1 = self.encoder1(x1+torch.randn_like(x1) * self.sigma1)
-        #h2 = self.encoder2(x2+torch.randn_like(x2) * self.sigma2)
-        #print(h1.shape)
-        #print(h2.shape)
-        
+        h1 = self.encoder1(x1+torch.randn_like(x1) * self.sigma1)     
         h1_ = self.decoder1(h1)
-        #print(h1_.shape)
         mean1 = self.dec_mean1(h1_)
         disp1 = self.dec_disp1(h1_)
-        
-        #h2_ = self.decoder2(h2)
-        #print(h2_.shape)
-        #mean2 = self.dec_mean2(h2_)
-        #disp2 = self.dec_disp2(h2_)
-        
         pi1 = self.dec_pi1(h1_)
-
-        #h10 = self.encoder1(x1)
-        #h20 = self.encoder2(x2)
-        #combine_latent0 = torch.cat([h10, h20], dim=-1)
-        #z0 = self.latent_enc(combine_latent0)
-        #combine_latent0_ = self.latent_dec(z0)
         q = self.soft_assign(h1)
         num, lq = self.cal_latent(h1)
         return h1, q, num, lq, mean1, disp1, pi1
@@ -159,28 +142,10 @@ class scMultiCluster(nn.Module):
         use_cuda = torch.cuda.is_available()
         if use_cuda:
             self.cuda()
-        #h1 = self.encoder1(x1+torch.randn_like(x1) * self.sigma1)
         h2 = self.encoder2(x2+torch.randn_like(x2) * self.sigma2)
-        #print(h1.shape)
-        #print(h2.shape)
-        
-        #h1_ = self.decoder1(h1)
-        #print(h1_.shape)
-        #mean1 = self.dec_mean1(h1_)
-        #disp1 = self.dec_disp1(h1_)
-        
         h2_ = self.decoder2(h2)
-        #print(h2_.shape)
         mean2 = self.dec_mean2(h2_)
         disp2 = self.dec_disp2(h2_)
-        
-        #pi1 = self.dec_pi1(h1_)
-
-        #h10 = self.encoder1(x1)
-        #h20 = self.encoder2(x2)
-        #combine_latent0 = torch.cat([h10, h20], dim=-1)
-        #z0 = self.latent_enc(combine_latent0)
-        #combine_latent0_ = self.latent_dec(z0)
         q = self.soft_assign(h2)
         num, lq = self.cal_latent(h2)
         return h2, q, num, lq, mean2, disp2
@@ -191,27 +156,10 @@ class scMultiCluster(nn.Module):
             self.cuda()
             
         h1 = self.encoder1(x1+torch.randn_like(x1) * self.sigma1)
-        #h2 = self.encoder2(x2+torch.randn_like(x2) * self.sigma2)
-        #print(h1.shape)
-        #print(h2.shape)
-        
         h1_ = self.decoder1(h1)
-        #print(h1_.shape)
         mean1 = self.dec_mean1(h1_)
         disp1 = self.dec_disp1(h1_)
-        
-        #h2_ = self.decoder2(h2)
-        #print(h2_.shape)
-        #mean2 = self.dec_mean2(h2_)
-        #disp2 = self.dec_disp2(h2_)
-        
         pi1 = self.dec_pi1(h1_)
-
-        #h10 = self.encoder1(x1)
-        #h20 = self.encoder2(x2)
-        #combine_latent0 = torch.cat([h10, h20], dim=-1)
-        #z0 = self.latent_enc(combine_latent0)
-        #combine_latent0_ = self.latent_dec(z0)
         num, lq = self.cal_latent(h1)
         return h1, num, lq, mean1, disp1, pi1
         
@@ -219,29 +167,10 @@ class scMultiCluster(nn.Module):
         use_cuda = torch.cuda.is_available()
         if use_cuda:
             self.cuda()
-            
-        #h1 = self.encoder1(x1+torch.randn_like(x1) * self.sigma1)
         h2 = self.encoder2(x2+torch.randn_like(x2) * self.sigma2)
-        #print(h1.shape)
-        #print(h2.shape)
-        
-        #h1_ = self.decoder1(h1)
-        #print(h1_.shape)
-        #mean1 = self.dec_mean1(h1_)
-        #disp1 = self.dec_disp1(h1_)
-        
         h2_ = self.decoder2(h2)
-        #print(h2_.shape)
         mean2 = self.dec_mean2(h2_)
         disp2 = self.dec_disp2(h2_)
-        
-        #pi1 = self.dec_pi1(h1_)
-
-        #h10 = self.encoder1(x1)
-        #h20 = self.encoder2(x2)
-        #combine_latent0 = torch.cat([h10, h20], dim=-1)
-        #z0 = self.latent_enc(combine_latent0)
-        #combine_latent0_ = self.latent_dec(z0)
         num, lq = self.cal_latent(h2)
         return h2, num, lq, mean2, disp2
     
