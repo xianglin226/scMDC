@@ -29,7 +29,7 @@ if __name__ == "__main__":
     parser.add_argument('--batch_size', default=256, type=int)
     parser.add_argument('--data_file', default='./realdata/10X_PBMC_newCount_filtered_1000G.H5')
     parser.add_argument('--maxiter', default=2000, type=int)
-    parser.add_argument('--pretrain_epochs', default=500, type=int)
+    parser.add_argument('--pretrain_epochs', default=400, type=int)
     parser.add_argument('--gamma1', default=.001, type=float,
                         help='coefficient of clustering loss')
     parser.add_argument('--gamma2', default=.001, type=float,
@@ -47,6 +47,7 @@ if __name__ == "__main__":
     parser.add_argument('--prediction_file', default=-1)
     parser.add_argument('-l1','--encodeLayer1', nargs='+', default=[256,128,64])
     parser.add_argument('-l2','--encodeLayer2', nargs='+', default=[8])
+    parser.add_argument('-l3','--encodeLayer3', nargs='+', default=[64,16])
     parser.add_argument('--sigma1', default=2.5, type=float)
     parser.add_argument('--sigma2', default=.1, type=float)
     parser.add_argument('--source', default="RNA")
@@ -55,7 +56,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     data_mat = h5py.File(args.data_file)
-    x1 = np.array(data_mat['X1']) # test for single model, set x1 as X3
+    x1 = np.array(data_mat['X1'])
     x2 = np.array(data_mat['X2'])
     y = np.array(data_mat['Y'])
     x2_zero = [i for i, val in enumerate((x2==0).all(1)) if val]
@@ -116,11 +117,20 @@ if __name__ == "__main__":
     print(args)
     print(y.shape)
 
+   #get layers
     encodeLayer1 = list(map(int, args.encodeLayer1))
+    decodeLayer1 = encodeLayer1[::-1]
     encodeLayer2 = list(map(int, args.encodeLayer2))
+    if len(encodeLayer2) >1:
+       decodeLayer2 = encodeLayer2[::-1]
+    else:
+       decodeLayer2 = encodeLayer2
+    encodeLayer3 = list(map(int, args.encodeLayer3))
+    decodeLayer3 = encodeLayer3[::-1]
+    
     model = scMultiCluster(input_dim1=input_size1, input_dim2=input_size2,
-                        zencode_dim=[64, 16], zdecode_dim=[16, 64], 
-                        encodeLayer1=encodeLayer1, decodeLayer1=encodeLayer1[::-1], encodeLayer2=encodeLayer2, decodeLayer2=encodeLayer2[::-1],
+                        zencode_dim=encodeLayer3, zdecode_dim=decodeLayer3, 
+                        encodeLayer1=encodeLayer1, decodeLayer1=decodeLayer1, encodeLayer2=encodeLayer2, decodeLayer2=decodeLayer2,
                         sigma1=args.sigma1, sigma2=args.sigma2, gamma1=args.gamma1, gamma2=args.gamma2, gamma3=args.gamma3, cutoff = args.cutoff).cuda()
     
     print(str(model))
