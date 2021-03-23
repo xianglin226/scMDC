@@ -15,8 +15,8 @@ Numpy 1.18.1
 See the example script in script/run_scMDC.sh
 
 # Arguments
---n_clusters: number of clusters (K); scMDC will estimate K if this arguments is set to -1. \n
---cutoff: A ratio of batch before which the model only train the low-level autoencoders.
+--n_clusters: number of clusters (K); scMDC will estimate K if this arguments is set to -1.  
+--cutoff: A ratio of batch before which the model only train the low-level autoencoders.  
 --batch_size: batch size
 --data_file: path to the data input.
 Data format: H5 
