@@ -1,3 +1,7 @@
+from sklearn.metrics.pairwise import paired_distances
+from sklearn.decomposition import PCA
+from sklearn import metrics
+from sklearn.cluster import KMeans
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
@@ -7,13 +11,8 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 from layers import NBLoss, ZINBLoss, MeanAct, DispAct
 import numpy as np
-from sklearn.cluster import KMeans
 import math, os
-from sklearn import metrics
 from utils import cluster_acc, torch_PCA
-from pytorch_kmeans import kmeans, initialize, pairwise_distance, pairwise_cosine, kmeans_predict
-from sklearn.metrics.pairwise import paired_distances
-from sklearn.decomposition import PCA
 from preprocess import read_dataset, normalize
 import scanpy as sc
 
@@ -29,13 +28,13 @@ def buildNetwork(layers, type, activation="relu"):
             net.append(nn.Sigmoid())
     return nn.Sequential(*net)
 
-
 class scMultiCluster(nn.Module):
     def __init__(self, input_dim1, input_dim2, zencode_dim=[64,16], zdecode_dim=[16,64],
-            encodeLayer1=[256, 128, 64], decodeLayer1=[64, 128, 256], encodeLayer2=[32,8], decodeLayer2=[8,32], 
-            activation="relu", sigma1=2.5, sigma2=1., alpha=1., gamma1=.01, gamma2=.001, gamma3=.1, cutoff = 0.5):
+            encodeLayer1=[256, 128, 64], decodeLayer1=[64, 128, 256], encodeLayer2=[8], decodeLayer2=[8], 
+            activation="relu", sigma1=2.5, sigma2=1., alpha=1., gamma1=.01, gamma2=.1, gamma3=0.001, cutoff1 = 0.3, cutoff2 = 0.3):
         super(scMultiCluster, self).__init__()
-        self.cutoff = cutoff
+        self.cutoff1 = cutoff1
+        self.cutoff2 = cutoff2
         self.activation = activation
         self.sigma1 = sigma1
         self.sigma2 = sigma2
@@ -139,7 +138,6 @@ class scMultiCluster(nn.Module):
             self.cuda()
             
         encoded = []
-        self.eval()
         num = X1.shape[0]
         num_batch = int(math.ceil(1.0*X1.shape[0]/batch_size))
         for batch_idx in range(num_batch):
@@ -175,8 +173,9 @@ class scMultiCluster(nn.Module):
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
         print("Pretraining stage")
         optimizer = optim.Adam(filter(lambda p: p.requires_grad, self.parameters()), lr=lr, amsgrad=True)
+        counts1 = 0
         for epoch in range(epochs):
-            counts = 0
+            counts2 = 0
             for batch_idx, (x1_batch, x_raw1_batch, sf1_batch, x2_batch, x_raw2_batch, sf2_batch) in enumerate(dataloader):
                 x1_tensor = Variable(x1_batch).cuda()
                 x_raw1_tensor = Variable(x_raw1_batch).cuda()
@@ -189,21 +188,28 @@ class scMultiCluster(nn.Module):
                 recon_loss1 = self.zinb_loss(x=x_raw1_tensor, mean=mean1_tensor, disp=disp1_tensor, pi=pi1_tensor, scale_factor=sf1_tensor)
                 #recon_loss2 = self.mse(mean2_tensor, x2_tensor)
                 recon_loss2 = self.NBLoss(x=x_raw2_tensor, mean=mean2_tensor, disp=disp2_tensor, scale_factor=sf2_tensor)
-                recon_loss_latent = self.mse(combine_latent0_, combine_latent0) * self.gamma3
+                recon_loss_latent = self.mse(combine_latent0_, combine_latent0) * self.gamma2
                 lpbatch = self.target_distribution(lqbatch)
                 lqbatch = lqbatch + torch.diag(torch.diag(z_num))
                 lpbatch = lpbatch + torch.diag(torch.diag(z_num))
-                kl_loss = self.kldloss(lpbatch, lqbatch) * self.gamma2
-                if counts > num_batch * self.cutoff:
+                kl_loss = self.kldloss(lpbatch, lqbatch) * self.gamma3
+                if counts1 > epochs * self.cutoff1 and counts2 > num_batch * self.cutoff2:
                    loss = recon_loss1 + recon_loss2 + recon_loss_latent + kl_loss
+                   optimizer.zero_grad()
+                   loss.backward()
+                   optimizer.step()
+                   counts2 +=1
+                   print('Pretrain epoch [{}/{}], ZINB loss:{:.4f}, NB loss:{:.4f}, latent MSE loss:{:.8f}, KL loss:{:.8f}'.format(
+                   batch_idx+1, epoch+1, recon_loss1.item(), recon_loss2.item(), recon_loss_latent.item(), kl_loss.item()))
                 else:
-                   loss = recon_loss1 + recon_loss2 + kl_loss
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
-                counts +=1
-                print('Pretrain epoch [{}/{}], ZINB loss:{:.4f}, NB loss:{:.4f}, latent MSE loss:{:.8f}, KL loss:{:.8f}'.format(
-                batch_idx+1, epoch+1, recon_loss1.item(), recon_loss2.item(), recon_loss_latent.item(), kl_loss.item()))
+                   loss = recon_loss1 + recon_loss2
+                   optimizer.zero_grad()
+                   loss.backward()
+                   optimizer.step()
+                   counts2 +=1
+                   print('Pretrain epoch [{}/{}], ZINB loss:{:.4f}, NB loss:{:.4f}'.format(
+                   batch_idx+1, epoch+1, recon_loss1.item(), recon_loss2.item()))
+            counts1 +=1
 
         if ae_save:
             torch.save({'ae_state_dict': self.state_dict(),
@@ -213,7 +219,7 @@ class scMultiCluster(nn.Module):
         newfilename = os.path.join(filename, 'FTcheckpoint_%d.pth.tar' % index)
         torch.save(state, newfilename)
 
-    def fit(self, X1, X_raw1, sf1, X2, X_raw2, sf2, y=None, lr=1., n_clusters = 4,
+    def fit(self, X1, X_raw1, sf1, X2, X_raw2, sf2, y=None, lr=.1, n_clusters = 4,
             batch_size=256, num_epochs=10, update_interval=1, tol=1e-3, save_dir=""):
         '''X: tensor data'''
         use_cuda = torch.cuda.is_available()
@@ -226,10 +232,10 @@ class scMultiCluster(nn.Module):
         X2 = torch.tensor(X2).cuda()
         X_raw2 = torch.tensor(X_raw2).cuda()
         sf2 = torch.tensor(sf2).cuda()
-        optimizer = optim.Adam(filter(lambda p: p.requires_grad, self.parameters()), lr=0.001)
-        
-        print("Initializing cluster centers with kmeans.")
         self.mu = Parameter(torch.Tensor(n_clusters, self.z_dim))
+        optimizer = optim.Adadelta(filter(lambda p: p.requires_grad, self.parameters()), lr=lr, rho=.95)
+             
+        print("Initializing cluster centers with kmeans.")
         kmeans = KMeans(n_clusters, n_init=20)
         Zdata = self.encodeBatch(X1, X2, batch_size=batch_size)
         self.y_pred = kmeans.fit_predict(Zdata.data.cpu().numpy())
@@ -249,13 +255,13 @@ class scMultiCluster(nn.Module):
 
         for epoch in range(num_epochs):
             if epoch%update_interval == 0:
-                # update the targe distribution p
                 Zdata = self.encodeBatch(X1, X2, batch_size=batch_size)
                 q = self.soft_assign(Zdata)
                 p = self.target_distribution(q).data
-                self.y_pred = kmeans_predict(X=Zdata, cluster_centers = self.mu, distance='euclidean', device=torch.device('cuda:0'))
-                self.y_pred = self.y_pred.data.cpu().numpy()
                 
+                # evalute the clustering performance
+                self.y_pred = torch.argmax(q, dim=1).data.cpu().numpy()
+
                 if y is not None:
                     final_acc = acc = np.round(cluster_acc(y, self.y_pred), 5)
                     final_nmi = nmi = np.round(metrics.normalized_mutual_info_score(y, self.y_pred), 5)
@@ -281,8 +287,7 @@ class scMultiCluster(nn.Module):
                     print('delta_label ', delta_label, '< tol ', tol)
                     print("Reach tolerance threshold. Stopping training.")
                     break
-
-
+                
             # train 1 epoch for clustering loss
             train_loss = 0.0
             recon_loss1_val = 0.0
@@ -309,9 +314,7 @@ class scMultiCluster(nn.Module):
 
                 zbatch, qbatch, z_num, lqbatch, mean1_tensor, mean2_tensor, disp1_tensor, disp2_tensor, pi1_tensor, combine_latent0, combine_latent0_ = self.forward(inputs1, inputs2)
                 
-                dis = pairwise_distance(zbatch, self.mu, device=torch.device('cuda:0'))
-                choice_cluster = torch.min(dis, dim=1)
-                cluster_loss = torch.sum(choice_cluster.values) 
+                cluster_loss = self.cluster_loss(target1, qbatch)
                 #recon_loss1 = self.mse(mean1_tensor, inputs1)
                 recon_loss1 = self.zinb_loss(x=rawinputs1, mean=mean1_tensor, disp=disp1_tensor, pi=pi1_tensor, scale_factor=sfinputs1)
                 #recon_loss2 = self.mse(mean2_tensor, inputs2)
@@ -321,17 +324,18 @@ class scMultiCluster(nn.Module):
                 lqbatch = lqbatch + torch.diag(torch.diag(z_num))
                 target2 = target2 + torch.diag(torch.diag(z_num))
                 kl_loss = self.kldloss(target2, lqbatch)
-                loss = recon_loss1 + recon_loss2 + self.gamma3 * recon_loss_latent + cluster_loss * self.gamma1 + kl_loss * self.gamma2
+                loss = recon_loss_latent * self.gamma2 + cluster_loss * self.gamma1 + kl_loss * self.gamma3 + recon_loss1 + recon_loss2
                 loss.backward()
+                torch.nn.utils.clip_grad_norm_(self.mu, 1)
                 optimizer.step()
-                cluster_loss_val += cluster_loss.data * self.gamma1 * len(inputs1)
+                cluster_loss_val += cluster_loss.data * len(inputs1)
                 recon_loss1_val += recon_loss1.data * len(inputs1)
                 recon_loss2_val += recon_loss2.data * len(inputs2)
-                recon_loss_latent_val += recon_loss_latent.data * self.gamma3 * len(inputs1)
-                kl_loss_val += kl_loss.data * self.gamma2 * len(inputs1) 
+                recon_loss_latent_val += recon_loss_latent.data * len(inputs1)
+                kl_loss_val += kl_loss.data * len(inputs1)
                 train_loss = recon_loss1_val + recon_loss2_val + recon_loss_latent_val + cluster_loss_val + kl_loss_val
 
-            print("#Epoch %3d: Total: %.4f Clustering Loss: %.4f ZINB Loss: %.4f NB Loss: %.4f Latent MSE Loss: %.4f KL Loss: %.4f" % (
+            print("#Epoch %3d: Total: %.4f Clustering Loss: %.8f ZINB Loss: %.4f NB Loss: %.4f Latent MSE Loss: %.4f KL Loss: %.4f" % (
                epoch + 1, train_loss / num, cluster_loss_val / num, recon_loss1_val / num, recon_loss2_val / num, recon_loss_latent_val / num, kl_loss_val / num))
 
         return self.y_pred, final_acc, final_nmi, final_ari, final_epoch
