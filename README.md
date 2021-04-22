@@ -16,7 +16,7 @@ See the example script in script/run_scMDC.sh
 
 # Arguments
 --n_clusters: number of clusters (K); scMDC will estimate K if this arguments is set to -1.  
---cutoff1: A ratio of epoch before which the model only train the low-level autoencoders.
+--cutoff1: A ratio of epoch before which the model only train the low-level autoencoders.  
 --cutoff2: A ratio of batch before which the model only train the low-level autoencoders.  
 --batch_size: batch size.  
 --data_file: path to the data input.  
@@ -25,8 +25,8 @@ Structure: X1(RNA), X2(ADT), Y(label, if exit).
 --maxiter: maximum epochs of training. Default: 2000.  
 --pretrain_epochs: number of epochs for pre-training. Default: 600.  
 --gamma1: coefficient of clustering loss. Default: 0.01.  
---gamma2: coefficient of latent autoencoder loss. Default: 0.1. 
---gamma3: coefficient of KL loss. Default: 0.001. 
+--gamma2: coefficient of latent autoencoder loss. Default: 0.1.  
+--gamma3: coefficient of KL loss. Default: 0.001.  
 --update_interval: the interval to check the performance. Default: 100.  
 --tol: the criterion to stop the model, which is a percentage of changed labels. Default: 0.0001.  
 --ae_weights: path of the weight file.  
@@ -39,5 +39,5 @@ Structure: X1(RNA), X2(ADT), Y(label, if exit).
 --encodeLayer1: layers of the low-level encoder for RNA: Default: [256,128,64].  
 --encodeLayer2: layers of the low-level encoder for ADT: Default: [8].  
 --encodeLayer3: layers of the high-level encoder. Default:[64,16].  
---sigma1: noise on RNA data. Default: 3..  
+--sigma1: noise on RNA data. Default: 3.0.  
 --sigma2: noise on ADT data. Default: 0.2.  
