@@ -164,7 +164,7 @@ class scMultiCluster(nn.Module):
         return l
 
     def pretrain_autoencoder(self, X1, X_raw1, sf1, X2, X_raw2, sf2, 
-            batch_size=256, lr=0.001, epochs=400, ae_save=True, ae_weights='AE_weights.pth.tar'):
+            batch_size=256, lr=0.005, epochs=400, ae_save=True, ae_weights='AE_weights.pth.tar'):
         num_batch = int(math.ceil(1.0*X1.shape[0]/batch_size))
         use_cuda = torch.cuda.is_available()
         if use_cuda:
