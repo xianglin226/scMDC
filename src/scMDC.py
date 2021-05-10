@@ -30,8 +30,8 @@ def buildNetwork(layers, type, activation="relu"):
 
 class scMultiCluster(nn.Module):
     def __init__(self, input_dim1, input_dim2, zencode_dim=[64,16], zdecode_dim=[16,64],
-            encodeLayer1=[256, 128, 64], decodeLayer1=[64, 128, 256], encodeLayer2=[8], decodeLayer2=[8], 
-            activation="relu", sigma1=2.5, sigma2=1., alpha=1., gamma1=.01, gamma2=.1, gamma3=0.001, cutoff = 0.3):
+            encodeLayer1=[64, 32, 12], decodeLayer1=[12, 32, 64], encodeLayer2=[8], decodeLayer2=[8], 
+            activation="relu", sigma1=2.5, sigma2=0., alpha=1., gamma1=.01, gamma2=.1, gamma3=0.001, cutoff = 0.5):
         super(scMultiCluster, self).__init__()
         self.cutoff = cutoff
         self.activation = activation
