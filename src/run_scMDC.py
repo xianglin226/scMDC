@@ -24,8 +24,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='train',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--n_clusters', default=7, type=int)
-    parser.add_argument('--cutoff1', default=0.5, type=float, help='Start to train combined layer after what ratio of epoch')
-    parser.add_argument('--cutoff2', default=0., type=float, help='Start to train combined layer after what ratio of batch')
+    parser.add_argument('--cutoff', default=0.5, type=float, help='Start to train combined layer after what ratio of epoch')
     parser.add_argument('--batch_size', default=256, type=int)
     parser.add_argument('--data_file', default='./realdata/10X_PBMC_newCount_filtered_1000G.H5')
     parser.add_argument('--maxiter', default=2000, type=int)
@@ -116,7 +115,7 @@ if __name__ == "__main__":
     model = scMultiCluster(input_dim1=input_size1, input_dim2=input_size2,
                         zencode_dim=encodeLayer3, zdecode_dim=decodeLayer3, 
                         encodeLayer1=encodeLayer1, decodeLayer1=decodeLayer1, encodeLayer2=encodeLayer2, decodeLayer2=decodeLayer2,
-                        sigma1=args.sigma1, sigma2=args.sigma2, gamma1=args.gamma1, gamma2=args.gamma2, gamma3=args.gamma3, cutoff1 = args.cutoff1, cutoff2 = args.cutoff2).cuda()
+                        sigma1=args.sigma1, sigma2=args.sigma2, gamma1=args.gamma1, gamma2=args.gamma2, gamma3=args.gamma3, cutoff = args.cutoff).cuda()
     
     print(str(model))
     
