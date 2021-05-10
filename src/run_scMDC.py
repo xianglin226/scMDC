@@ -29,7 +29,7 @@ if __name__ == "__main__":
     parser.add_argument('--batch_size', default=256, type=int)
     parser.add_argument('--data_file', default='./realdata/10X_PBMC_newCount_filtered_1000G.H5')
     parser.add_argument('--maxiter', default=2000, type=int)
-    parser.add_argument('--pretrain_epochs', default=600, type=int)
+    parser.add_argument('--pretrain_epochs', default=400, type=int)
     parser.add_argument('--gamma1', default=0.1, type=float,
                         help='coefficient of clustering loss')
     parser.add_argument('--gamma2', default=0.1, type=float,
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     parser.add_argument('--n_neighbors', default=30, type=int)
     parser.add_argument('--embedding_file', default=-1)
     parser.add_argument('--prediction_file', default=-1)
-    parser.add_argument('-l1','--encodeLayer1', nargs='+', default=[64,32,8])
+    parser.add_argument('-l1','--encodeLayer1', nargs='+', default=[64,32,12])
     parser.add_argument('-l2','--encodeLayer2', nargs='+', default=[8])
     parser.add_argument('-l3','--encodeLayer3', nargs='+', default=[64,16])
     parser.add_argument('--sigma1', default=3., type=float)
