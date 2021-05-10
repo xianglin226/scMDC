@@ -31,10 +31,9 @@ def buildNetwork(layers, type, activation="relu"):
 class scMultiCluster(nn.Module):
     def __init__(self, input_dim1, input_dim2, zencode_dim=[64,16], zdecode_dim=[16,64],
             encodeLayer1=[256, 128, 64], decodeLayer1=[64, 128, 256], encodeLayer2=[8], decodeLayer2=[8], 
-            activation="relu", sigma1=2.5, sigma2=1., alpha=1., gamma1=.01, gamma2=.1, gamma3=0.001, cutoff1 = 0.3, cutoff2 = 0.3):
+            activation="relu", sigma1=2.5, sigma2=1., alpha=1., gamma1=.01, gamma2=.1, gamma3=0.001, cutoff = 0.3):
         super(scMultiCluster, self).__init__()
-        self.cutoff1 = cutoff1
-        self.cutoff2 = cutoff2
+        self.cutoff = cutoff
         self.activation = activation
         self.sigma1 = sigma1
         self.sigma2 = sigma2
@@ -173,9 +172,8 @@ class scMultiCluster(nn.Module):
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
         print("Pretraining stage")
         optimizer = optim.Adam(filter(lambda p: p.requires_grad, self.parameters()), lr=lr, amsgrad=True)
-        counts1 = 0
+        counts = 0
         for epoch in range(epochs):
-            counts2 = 0
             for batch_idx, (x1_batch, x_raw1_batch, sf1_batch, x2_batch, x_raw2_batch, sf2_batch) in enumerate(dataloader):
                 x1_tensor = Variable(x1_batch).cuda()
                 x_raw1_tensor = Variable(x_raw1_batch).cuda()
@@ -193,12 +191,11 @@ class scMultiCluster(nn.Module):
                 lqbatch = lqbatch + torch.diag(torch.diag(z_num))
                 lpbatch = lpbatch + torch.diag(torch.diag(z_num))
                 kl_loss = self.kldloss(lpbatch, lqbatch) * self.gamma3
-                if counts1 > epochs * self.cutoff1 and counts2 > num_batch * self.cutoff2:
+                if counts > epochs * self.cutoff:
                    loss = recon_loss1 + recon_loss2 + recon_loss_latent + kl_loss
                    optimizer.zero_grad()
                    loss.backward()
                    optimizer.step()
-                   counts2 +=1
                    print('Pretrain epoch [{}/{}], ZINB loss:{:.4f}, NB loss:{:.4f}, latent MSE loss:{:.8f}, KL loss:{:.8f}'.format(
                    batch_idx+1, epoch+1, recon_loss1.item(), recon_loss2.item(), recon_loss_latent.item(), kl_loss.item()))
                 else:
@@ -206,10 +203,9 @@ class scMultiCluster(nn.Module):
                    optimizer.zero_grad()
                    loss.backward()
                    optimizer.step()
-                   counts2 +=1
                    print('Pretrain epoch [{}/{}], ZINB loss:{:.4f}, NB loss:{:.4f}'.format(
                    batch_idx+1, epoch+1, recon_loss1.item(), recon_loss2.item()))
-            counts1 +=1
+            counts +=1
 
         if ae_save:
             torch.save({'ae_state_dict': self.state_dict(),
