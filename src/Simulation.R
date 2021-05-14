@@ -23,7 +23,6 @@ for (i in 1:20) {
   #set dropout rate to 0.5, 0.7 and 0.9, mean and disp of gene and ZINB were adjusted according to the real datasets.
   #Different datasets have different mean and sd of genes, but sd is always about 4-fold of mean.
   #For exmaple, mean and sd of genes for PBMC data is about 1 and 5; for a randomly-picked simulated data (with medium signal and 0.9 dropout), mean and sd is about 1.5 and 6
-  params <- setParam(params, "gene.params", data.frame(Mean=rep(5,1000), Disp=rep(0.1,1000)))
   params <- setParam(params, "zi.params", data.frame(Mean=rep(3,1000), Disp=rep(0.1,1000), Prop=rep(0.9,1000))) #p 0.5, 0.7, 0.9
   params <- setParam(params, "cell.plates", groups)
   #enlarge the library size differences among cells 
