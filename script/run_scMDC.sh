@@ -1,7 +1,7 @@
 #!/bin/bash -l
 #SBATCH --gres=gpu:1
 
-#Here is the commands for the real data experiments. We test ten times on each dataset.
+#Here are the commands for the real data experiments. We test ten times on each dataset.
 
 f=../datasets/10XPBMC_filtered_1000G.H5
 echo "10XPBMC"
