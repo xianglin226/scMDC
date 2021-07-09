@@ -29,7 +29,7 @@ if __name__ == "__main__":
     parser.add_argument('--data_file', default='./realdata/10X_PBMC_newCount_filtered_1000G.H5')
     parser.add_argument('--maxiter', default=2000, type=int)
     parser.add_argument('--pretrain_epochs', default=400, type=int)
-    parser.add_argument('--gamma1', default=0.01, type=float,
+    parser.add_argument('--gamma1', default=0.1, type=float,
                         help='coefficient of clustering loss')
     parser.add_argument('--gamma2', default=0.1, type=float,
                         help='coefficient of latent autoencoder loss')                    
