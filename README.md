@@ -11,6 +11,8 @@ SKlearn 0.22.1
 
 Numpy 1.18.1
 
+All experiments of scMDC in this study are
+conducted on Nvidia Tesla P100 (16G) GPU.  
 # Run scMDC
 See the example script in script/run_scMDC.sh
 
