@@ -20,8 +20,7 @@ See the example script in script/run_scMDC.sh
 
 # Arguments
 --n_clusters: number of clusters (K); scMDC will estimate K if this arguments is set to -1.  
---cutoff1: A ratio of epoch before which the model only train the low-level autoencoders.  
---cutoff2: A ratio of batch before which the model only train the low-level autoencoders.  
+--cutoff: A ratio of epoch before which the model only train the low-level autoencoders.   
 --batch_size: batch size.  
 --data_file: path to the data input.  
 Data format: H5.  
