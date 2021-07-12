@@ -16,7 +16,8 @@ h5py 2.9.0
 All experiments of scMDC in this study are
 conducted on Nvidia Tesla P100 (16G) GPU.  
 # Run scMDC
-See the example script in script/run_scMDC.sh
+See the tutorial for details.
+Sample script and output are provided in script/run_scMDC.sh
 
 # Arguments
 --n_clusters: number of clusters (K); scMDC will estimate K if this arguments is set to -1.  
