@@ -27,7 +27,7 @@ Data format: H5.
 Structure: X1(RNA), X2(ADT), Y(label, if exit).  
 --maxiter: maximum epochs of training. Default: 2000.  
 --pretrain_epochs: number of epochs for pre-training. Default: 400.  
---gamma1: coefficient of clustering loss. Default: 0.01.  
+--gamma1: coefficient of clustering loss. Default: 0.1.  
 --gamma2: coefficient of latent autoencoder loss. Default: 0.1.  
 --gamma3: coefficient of KL loss. Default: 0.0001.  
 --update_interval: the interval to check the performance. Default: 1.  
