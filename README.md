@@ -17,6 +17,7 @@ All experiments of scMDC in this study are
 conducted on Nvidia Tesla P100 (16G) GPU.  
 # Run scMDC
 See the tutorial for details.
+
 Sample script and output are provided in script/run_scMDC.sh
 
 # Arguments
