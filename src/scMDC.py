@@ -186,13 +186,13 @@ class scMultiCluster(nn.Module):
                 recon_loss1 = self.zinb_loss(x=x_raw1_tensor, mean=mean1_tensor, disp=disp1_tensor, pi=pi1_tensor, scale_factor=sf1_tensor)
                 #recon_loss2 = self.mse(mean2_tensor, x2_tensor)
                 recon_loss2 = self.NBLoss(x=x_raw2_tensor, mean=mean2_tensor, disp=disp2_tensor, scale_factor=sf2_tensor)
-                recon_loss_latent = self.mse(combine_latent0_, combine_latent0) * self.gamma2
+                recon_loss_latent = self.mse(combine_latent0_, combine_latent0)
                 lpbatch = self.target_distribution(lqbatch)
                 lqbatch = lqbatch + torch.diag(torch.diag(z_num))
                 lpbatch = lpbatch + torch.diag(torch.diag(z_num))
-                kl_loss = self.kldloss(lpbatch, lqbatch) * self.gamma3
+                kl_loss = self.kldloss(lpbatch, lqbatch) 
                 if counts > epochs * self.cutoff:
-                   loss = recon_loss1 + recon_loss2 + recon_loss_latent + kl_loss
+                   loss = recon_loss1 + recon_loss2 + recon_loss_latent * self.gamma2  + kl_loss * self.gamma3
                    optimizer.zero_grad()
                    loss.backward()
                    optimizer.step()
