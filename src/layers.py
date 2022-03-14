@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 
-
 class NBLoss(nn.Module):
     def __init__(self):
         super(NBLoss, self).__init__()
