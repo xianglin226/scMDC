@@ -32,7 +32,7 @@ Structure: X1(RNA), X2(ADT or ATAC), Y(label, if exit), Batch (Batch indicator f
 --maxiter: maximum epochs of training. Default: 10000.  
 --pretrain_epochs: number of epochs for pre-training. Default: 400.  
 --gamma: coefficient of clustering loss. Default: 0.1.  
---phi: coefficient of KL loss. Default: 0.001 for CITE-Seq; 0.005 for SMAGE-Seq.  
+--phi1 and phi2: coefficient of KL loss in pretraining and clustering stage. Default: 0.001 for CITE-Seq; 0.005 for SMAGE-Seq.  
 --update_interval: the interval to check the performance. Default: 1.  
 --tol: the criterion to stop the model, which is a percentage of changed labels. Default: 0.001.  
 --ae_weights: path of the weight file.  
