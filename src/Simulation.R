@@ -53,11 +53,6 @@ for(k in 1:10){
                                            vary="s", 
                                            Sigma=0.6, 
                                            phyla=phyla,
-                                           #scale_s = 0.1,
-                                           #gene_effects_sd = 2,
-                                           #prop_hge =0.025,
-                                           #mean_hge = 4,
-                                           #gene_effect_prob =0.3,
                                            randseed=k+1000)
 
   observed_RNAcounts <- True2ObservedCounts(true_counts=true_RNAcounts_res[[1]], 
@@ -122,12 +117,10 @@ for(k in 1:10){
   #filter
   rownames(counts2) <- paste("G",1:nrow(counts2),sep = "")
   colnames(counts2) <- paste("C",1:ncol(counts2),sep = "")
-  rownames(b) <- rownames(counts2)
   
   pbmc <- CreateSeuratObject(counts = counts2, project = "P2", min.cells = 0, min.features = 0)
   pbmc <- NormalizeData(pbmc, normalization.method = "LogNormalize")
   pbmc <- FindVariableFeatures(pbmc, selection.method = "vst", nfeatures = 30)
-  b <- b[pbmc@assays[["RNA"]]@var.features,]
   counts2 <- counts2[pbmc@assays[["RNA"]]@var.features,]
   
   h5file = paste("./batch/Simulation.", k, ".h5", sep="")
