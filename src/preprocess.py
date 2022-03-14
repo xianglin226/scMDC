@@ -26,7 +26,7 @@ import pandas as pd
 import scanpy as sc
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import scale
-
+import scipy
 
 #TODO: Fix this
 class AnnSequence:
@@ -84,7 +84,25 @@ def read_dataset(adata, transpose=False, test_split=False, copy=False):
 
     return adata
 
+def clr_normalize_each_cell(adata):
+    """Normalize count vector for each cell, i.e. for each row of .X"""
 
+    def seurat_clr(x):
+        # TODO: support sparseness
+        s = np.sum(np.log1p(x[x > 0]))
+        exp = np.exp(s / len(x))
+        return np.log1p(x / exp)
+    
+    adata.raw = adata.copy()
+    sc.pp.normalize_per_cell(adata)
+    adata.obs['size_factors'] = adata.obs.n_counts / np.median(adata.obs.n_counts)
+
+    # apply to dense or sparse matrix, along axis. returns dense matrix
+    adata.X = np.apply_along_axis(
+        seurat_clr, 1, (adata.raw.X.A if scipy.sparse.issparse(adata.raw.X) else adata.raw.X)
+    )
+    return adata
+    
 def normalize(adata, filter_min_counts=True, size_factors=True, normalize_input=True, logtrans_input=True):
 
     if filter_min_counts:
