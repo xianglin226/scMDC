@@ -45,6 +45,7 @@ Structure: X1(RNA), X2(ADT or ATAC), Y(label, if exit).
 --decodeLayer2: layers of the high-level encoder. Default:[16,20] for CITE-Seq. [64,128,256] for SMAGE-seq.
 --sigma1: noise on RNA data. Default: 2.5.  
 --sigma2: noise on ADT data. Default: 1.5 for CITE-Seq; 2.5 for SMAGE-Seq  
---filter: if do feature selection. Default: No.
+--filter1: if do feature selection on Genes. Default: No.
+--filter2: if do feature selection on ATAC. Default: No.
 --f1: Number of high variable genes (in X1) used for clustering if doing the featue selection. Default: 2000
 --f2: Number of high variable genes from ATAC (in X2) used for clustering if doing the featue selection. Default: 2000
