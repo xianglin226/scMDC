@@ -38,15 +38,15 @@ Structure: X1(RNA), X2(ADT or ATAC), Y(label, if exit), Batch (Batch indicator f
 --ae_weight_file: the directory to store the weights.  
 --resolution: the resolution parameter to estimate k. Default: 0.2.  
 --n_neighbors: the n_neighbors parameter to estimate K. Default: 30.  
---embedding_file: if save embedding file. Default: No
---prediction_file: if save prediction file. Default: No
+--embedding_file: if save embedding file. Default: No  
+--prediction_file: if save prediction file. Default: No  
 --encodeLayer: layers of the low-level encoder for RNA: Default: [256,64,32,16] for CITE-Seq; [256,128,64] for SMAGE-seq.  
---decodeLayer1: layers of the low-level encoder for ADT: Default: [16,64,256] for CITE-Seq. [64,128,256] for SMAGE-seq.
---decodeLayer2: layers of the high-level encoder. Default:[16,20] for CITE-Seq. [64,128,256] for SMAGE-seq.
+--decodeLayer1: layers of the low-level encoder for ADT: Default: [16,64,256] for CITE-Seq. [64,128,256] for SMAGE-seq.  
+--decodeLayer2: layers of the high-level encoder. Default:[16,20] for CITE-Seq. [64,128,256] for SMAGE-seq.  
 --sigma1: noise on RNA data. Default: 2.5.  
 --sigma2: noise on ADT data. Default: 1.5 for CITE-Seq; 2.5 for SMAGE-Seq  
---filter1: if do feature selection on Genes. Default: No.
---filter2: if do feature selection on ATAC. Default: No.
---f1: Number of high variable genes (in X1) used for clustering if doing the featue selection. Default: 2000
---f2: Number of high variable genes from ATAC (in X2) used for clustering if doing the featue selection. Default: 2000
+--filter1: if do feature selection on Genes. Default: No.  
+--filter2: if do feature selection on ATAC. Default: No.  
+--f1: Number of high variable genes (in X1) used for clustering if doing the featue selection. Default: 2000  
+--f2: Number of high variable genes from ATAC (in X2) used for clustering if doing the featue selection. Default: 2000  
 *We denote 10X Single-Cell Multiome ATAC + Gene Expression technology as SMAGE-seq for convenience.
