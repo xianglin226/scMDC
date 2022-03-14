@@ -4,10 +4,10 @@ Example datasets are in h5 format and can be downloaded from https://drive.googl
 Required objects in h5 file for running scMDC
 1) X1: mRNA count matrix
 2) X2: ADT count matrix
-3) Y: True labels (if existed)
+3) Y: True labels (if exist)
 4) Batch: batch indicator (for multi-batch analysis)
 
 Other objects:
 1) ADT: feature names in ADT count matirx
 2) Genes: feature names in mRNA count matrix
-3) Cell types: cell type of each cell.
+3) Cell types: cell type of each cell (if exist).
