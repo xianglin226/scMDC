@@ -26,7 +26,7 @@ Sample script and output are provided in "script" folder.
 --batch_size: batch size.  
 --data_file: path to the data input.  
 Data format: H5.  
-Structure: X1(RNA), X2(ADT or ATAC), Y(label, if exit).  
+Structure: X1(RNA), X2(ADT or ATAC), Y(label, if exit), Batch (Batch indicator for multi-batch data clustering).
 --maxiter: maximum epochs of training. Default: 2000.  
 --pretrain_epochs: number of epochs for pre-training. Default: 400.  
 --gamma: coefficient of clustering loss. Default: 0.1.  
