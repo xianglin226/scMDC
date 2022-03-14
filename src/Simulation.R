@@ -1,54 +1,139 @@
+library(SymSim)
 library(rhdf5)
-library(splatter)
+library(Seurat)
 
-#Randomly assign cell numbers in each group but with low diiferences
-rand_vect_cont <- function(N, M, sd = 1) {
-  vec <- abs(rnorm(N, M/N, sd))
-  vec / sum(vec) * M
+phyla <- read.tree("tree.txt")
+phyla2 <- read.tree("tree.txt")
+data(gene_len_pool)
+
+#This is a simulation script with adding batch effect
+#First we need to modify the DivideBatches2 function in SymSim to make the same batch partition in mRNA and ADT data.
+DivideBatches2 <- function(observed_counts_res, batchIDs, batch_effect_size=1){
+  observed_counts <- observed_counts_res[["counts"]]
+  meta_cell <- observed_counts_res[["cell_meta"]]
+  ncells <- dim(observed_counts)[2]
+  ngenes <- dim(observed_counts)[1]
+  nbatch <- unique(batchIDs)
+  meta_cell2 <- data.frame(batch = batchIDs, stringsAsFactors = F)
+  meta_cell <- cbind(meta_cell, meta_cell2)
+  mean_matrix <- matrix(0, ngenes, nbatch)
+  gene_mean <- rnorm(ngenes, 0, 1)
+  temp <- lapply(1:ngenes, function(igene) {
+    return(runif(nbatch, min = gene_mean[igene] - batch_effect_size, 
+                 max = gene_mean[igene] + batch_effect_size))
+  })
+  mean_matrix <- do.call(rbind, temp)
+  batch_factor <- matrix(0, ngenes, ncells)
+  for (igene in 1:ngenes) {
+    for (icell in 1:ncells) {
+      batch_factor[igene, icell] <- rnorm(n = 1, mean = mean_matrix[igene, 
+                                                                    batchIDs[icell]], sd = 0.01)
+    }
+  }
+  observed_counts <- round(2^(log2(observed_counts) + batch_factor))
+  return(list(counts = observed_counts, cell_meta = meta_cell))
 }
 
-get_group <- function(N, M, sd=1){
-  pro = rand_vect_cont(N,1,sd)
-  sample(seq(1,N,1),M, prob = pro, replace = T)
-}
+for(k in 1:10){
+  ##RNA
+  ncells = 1000
+  nbatchs = 2
+  batchIDs <- sample(1:nbatchs, ncells, replace = TRUE)
+  print(k)
+  print("Simulate RNA")
+  ngenes <- 2000
+  gene_len <- sample(gene_len_pool, ngenes, replace = FALSE)
+  true_RNAcounts_res <- SimulateTrueCounts(ncells_total=ncells, 
+                                           min_popsize=50, 
+                                           i_minpop=1, 
+                                           ngenes=ngenes, 
+                                           nevf=10, 
+                                           evf_type="discrete", 
+                                           n_de_evf=6, 
+                                           vary="s", 
+                                           Sigma=0.6, 
+                                           phyla=phyla,
+                                           #scale_s = 0.1,
+                                           #gene_effects_sd = 2,
+                                           #prop_hge =0.025,
+                                           #mean_hge = 4,
+                                           #gene_effect_prob =0.3,
+                                           randseed=k+1000)
 
-for (i in 1:20) {
-  #4 groups, 500 cells 
-  groups <- get_group(4,500, sd=0.1)
+  observed_RNAcounts <- True2ObservedCounts(true_counts=true_RNAcounts_res[[1]], 
+                                            meta_cell=true_RNAcounts_res[[3]], 
+                                            protocol="UMI", 
+                                            alpha_mean=0.00075, 
+                                            alpha_sd=0.0001, 
+                                            gene_len=gene_len, 
+                                            depth_mean=50000, 
+                                            depth_sd=3000,
+  )
+
+  batch_RNAcounts <- DivideBatches2(observed_RNAcounts, batchIDs, batch_effect_size = 1)
   
-  params = newLun2Params()
-  params <- setParam(params, "seed", i)
-  #simulate 1000 genes
-  params <- setParam(params, "nGenes", 1000)
-  #set dropout rate to 0.5, 0.7 and 0.9, mean and disp of gene and ZINB were adjusted according to the real datasets.
-  #Different datasets have different mean and sd of genes, but sd is always about 4-fold of mean.
-  #For exmaple, mean and sd of genes for PBMC data is about 1 and 5; for a randomly-picked simulated data (with medium signal and 0.9 dropout), mean and sd is about 1.5 and 6
-  params <- setParam(params, "zi.params", data.frame(Mean=rep(3,1000), Disp=rep(0.1,1000), Prop=rep(0.9,1000))) #p 0.5, 0.7, 0.9
-  params <- setParam(params, "cell.plates", groups)
-  #enlarge the library size differences among cells 
-  params <- setParam(params, "cell.libMod",5)
-  #change the signal among groups to low = 0.25, mid = 0.5, and high = 1
-  params <- setParam(params, "plate.var",0.5) 
+  ## Add batch effects 
+  print((sum(batch_RNAcounts$counts==0)-sum(true_RNAcounts_res$counts==0))/sum(true_RNAcounts_res$counts>0))
+  print(sum(batch_RNAcounts$counts==0)/prod(dim(batch_RNAcounts$counts)))
   
-  #simulate RNA by ZINB model
-  sim1 <- lun2Simulate(params = params, zinb = T, verbose = T)
-  dat1 <- counts(sim1)
+  ##ADT
+  print("Simulate ADT")
+  nadts <- 100
+  gene_len <- sample(gene_len_pool, nadts, replace = FALSE)
+  #The true counts of the five populations can be simulated:
+  true_ADTcounts_res <- SimulateTrueCounts(ncells_total=ncells, 
+                                           min_popsize=50, 
+                                           i_minpop=1, 
+                                           ngenes=nadts, 
+                                           nevf=10, 
+                                           evf_type="discrete", 
+                                           n_de_evf=6, 
+                                           vary="s", 
+                                           Sigma=0.3, 
+                                           phyla=phyla2,
+                                           randseed=k+1000)
   
-  #simulate 20 ADTS
-  params <- setParam(params, "nGenes", 20)
-  #ADT mean and disp were adjusted according to the real datasets. 
-  #Different datasets have quite different mean and sd of ADT, but sd is always about 1.5 to 2-fold of mean.
-  #For example, PBMC dataset has mean and sd of ADT about 300 and 600; a random-picked simulated data has mean and sd about 220 and 400.
-  params <- setParam(params, "gene.params", data.frame(Mean=rep(50,20), Disp=rep(1,20)))
+  observed_ADTcounts <- True2ObservedCounts(true_counts=true_ADTcounts_res[[1]], 
+                                            meta_cell=true_ADTcounts_res[[3]], 
+                                            protocol="UMI", 
+                                            alpha_mean=0.045, 
+                                            alpha_sd=0.01, 
+                                            gene_len=gene_len, 
+                                            depth_mean=50000, 
+                                            depth_sd=3000,
+  )
   
-  #simulate ADT by NB model
-  sim2 <- lun2Simulate(params = params, zinb = F, verbose = T)
-  dat2 <- counts(sim2)
+  ## Add batch effects 
+  batch_ADTcounts <- DivideBatches2(observed_ADTcounts, batchIDs, batch_effect_size = 1)
   
-  res <- paste("Simulation",i,"H5",sep = ".")
-  h5createFile(res)
-  h5write(dat1, res, "X1")
-  h5write(dat2, res, "X2")
-  h5write(groups, res, "Y")
-  h5closeAll()
+  print((sum(batch_ADTcounts$counts==0)-sum(true_ADTcounts_res$counts==0))/sum(true_ADTcounts_res$counts>0))
+  print(sum(batch_ADTcounts$counts==0)/prod(dim(batch_ADTcounts$counts)))
+  
+  y1 = batch_RNAcounts$cell_meta$pop
+  y2 = batch_ADTcounts$cell_meta$pop
+  batch1 = batch_ADTcounts$cell_meta$batch
+  batch2 = batch_RNAcounts$cell_meta$batch
+  print(sum(y1==y2))
+  print(sum(batch1 == batch2))
+  
+  counts1 <- batch_RNAcounts[[1]]
+  counts2 <- batch_ADTcounts[[1]]
+  
+  #filter
+  rownames(counts2) <- paste("G",1:nrow(counts2),sep = "")
+  colnames(counts2) <- paste("C",1:ncol(counts2),sep = "")
+  rownames(b) <- rownames(counts2)
+  
+  pbmc <- CreateSeuratObject(counts = counts2, project = "P2", min.cells = 0, min.features = 0)
+  pbmc <- NormalizeData(pbmc, normalization.method = "LogNormalize")
+  pbmc <- FindVariableFeatures(pbmc, selection.method = "vst", nfeatures = 30)
+  b <- b[pbmc@assays[["RNA"]]@var.features,]
+  counts2 <- counts2[pbmc@assays[["RNA"]]@var.features,]
+  
+  h5file = paste("./batch/Simulation.", k, ".h5", sep="")
+  h5createFile(h5file)
+  h5write(as.matrix(counts1), h5file,"X1")
+  h5write(as.matrix(counts2), h5file,"X2")
+  h5write(y1, h5file,"Y")
+  h5write(batch1, h5file,"Batch")
 }
