@@ -18,7 +18,8 @@ conducted on Nvidia Tesla P100 (16G) GPU.
 # Run scMDC
 See the tutorial for details.
 
-Sample script and output are provided in "script" folder.
+1) Prepare the input data in h5 format. (See readme in 'dataset' folder)  
+2) Run scMDC according to the running script in "script" folder (Note the parameter settings if you work on mRNA+ATAC dara)
 
 # Arguments
 --n_clusters: number of clusters (K); scMDC will estimate K if this arguments is set to -1.  
@@ -27,7 +28,7 @@ Sample script and output are provided in "script" folder.
 --data_file: path to the data input.  
 Data format: H5.  
 Structure: X1(RNA), X2(ADT or ATAC), Y(label, if exit), Batch (Batch indicator for multi-batch data clustering).  
---maxiter: maximum epochs of training. Default: 2000.  
+--maxiter: maximum epochs of training. Default: 10000.  
 --pretrain_epochs: number of epochs for pre-training. Default: 400.  
 --gamma: coefficient of clustering loss. Default: 0.1.  
 --phi: coefficient of KL loss. Default: 0.001 for CITE-Seq; 0.005 for SMAGE-Seq.  
