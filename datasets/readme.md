@@ -8,6 +8,8 @@ Required objects in h5 file for running scMDC
 4) Batch: batch indicator (for multi-batch analysis)
 
 Other objects:
-1) ADT: feature names in ADT count matirx
-2) Genes: feature names in mRNA count matrix
-3) Cell types: cell type of each cell (if exist).
+1) ADT: feature names in ADT count matirx (only in CITE-seq data)
+2) GenesFromPeaks: feature names in the gene-to-cell matrix mapped from scATAC-seq (only in SMAGE-seq data)
+3) Genes: feature names in mRNA count matrix
+4) Cell types: cell type of each cell (if exist).
+5) Barcodes: cell barcodes (if exits)
