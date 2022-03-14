@@ -47,8 +47,8 @@ if __name__ == "__main__":
     parser.add_argument('--ae_weight_file', default='AE_weights_1.pth.tar')
     parser.add_argument('--resolution', default=0.2, type=float)
     parser.add_argument('--n_neighbors', default=30, type=int)
-    parser.add_argument('--embedding_file', default=True)
-    parser.add_argument('--prediction_file', default=True)
+    parser.add_argument('--embedding_file', action='store_true', default=False)
+    parser.add_argument('--prediction_file', action='store_true', default=False)
     parser.add_argument('-el','--encodeLayer', nargs='+', default=[256,64,32,16])
     parser.add_argument('-dl1','--decodeLayer1', nargs='+', default=[16,64,256])
     parser.add_argument('-dl2','--decodeLayer2', nargs='+', default=[16,20])
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     parser.add_argument('--sigma2', default=1.5, type=float)
     parser.add_argument('--f1', default=2000, type=float)
     parser.add_argument('--f2', default=100, type=float)
-    parser.add_argument('--filter', default=False, type=bool)
+    parser.add_argument('--filter', action='store_true', default=False)
     parser.add_argument('--nbatch', default=2, type=int)
     parser.add_argument('--run', default=1, type=int)
     args = parser.parse_args()
@@ -153,10 +153,10 @@ if __name__ == "__main__":
         update_interval=args.update_interval, tol=args.tol, lr=args.lr, save_dir=args.save_dir)
     print('Total time: %d seconds.' % int(time() - t0))
     
-    if args.prediction_file is not None:
+    if args.prediction_file:
        np.savetxt(args.save_dir + "/" + str(args.run) + "_pred.csv", y_pred, delimiter=",")
     
-    if args.embedding_file is not None:
+    if args.embedding_file:
        final_latent = model.encodeBatch(torch.tensor(adata1.X).cuda(), torch.tensor(adata2.X).cuda(), torch.tensor(B).cuda(), batch_size=args.batch_size)
        final_latent = final_latent.cpu().numpy()
        np.savetxt(args.save_dir + "/" + str(args.run) + "_embedding.csv", final_latent, delimiter=",")
