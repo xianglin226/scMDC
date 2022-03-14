@@ -34,9 +34,9 @@ if __name__ == "__main__":
                         help='coefficient of clustering loss')
     parser.add_argument('--tau', default=1., type=float,
                         help='fuzziness of clustering loss')                    
-    parser.add_argument('--fi1', default=0.001, type=float,
+    parser.add_argument('--phi1', default=0.001, type=float,
                         help='coefficient of KL loss')
-    parser.add_argument('--fi2', default=0.001, type=float,
+    parser.add_argument('--phi2', default=0.001, type=float,
                         help='coefficient of KL loss')
     parser.add_argument('--update_interval', default=1, type=int)
     parser.add_argument('--tol', default=0.001, type=float)
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     model = scMultiCluster(input_dim1=input_size1, input_dim2=input_size2, tau=args.tau,
                         encodeLayer=encodeLayer, decodeLayer1=decodeLayer1, decodeLayer2=decodeLayer2,
                         activation='elu', sigma1=args.sigma1, sigma2=args.sigma2, gamma=args.gamma, 
-                        cutoff = args.cutoff, fi1=args.fi1, fi2=args.fi2).cuda()
+                        cutoff = args.cutoff, phi1=args.phi1, phi2=args.phi2).cuda()
     
     print(str(model))
     
