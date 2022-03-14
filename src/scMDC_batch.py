@@ -51,7 +51,7 @@ def buildNetwork2(layers, type, activation="relu"):
 class scMultiClusterBatch(nn.Module):
     def __init__(self, input_dim1, input_dim2, n_batch,
             encodeLayer=[], decodeLayer1=[], decodeLayer2=[], tau=1.,
-            activation="elu", sigma1=2.5, sigma2=.1, alpha=1., gamma=1., fi1=0.0001, fi2=0.0001, cutoff = 0.5,
+            activation="elu", sigma1=2.5, sigma2=.1, alpha=1., gamma=1., phi1=0.0001, phi2=0.0001, cutoff = 0.5,
             device="cuda"):
         super(scMultiClusterBatch, self).__init__()
         self.tau=tau
@@ -63,8 +63,8 @@ class scMultiClusterBatch(nn.Module):
         self.sigma2 = sigma2
         self.alpha = alpha
         self.gamma = gamma
-        self.fi1 = fi1
-        self.fi2 = fi2
+        self.phi1 = phi1
+        self.phi2 = phi2
         self.encoder = buildNetwork2([input_dim1+input_dim2+n_batch]+encodeLayer, type="encode", activation=activation)
         self.decoder1 = buildNetwork2([decodeLayer1[0]+n_batch]+decodeLayer1[1:], type="decode", activation=activation)
         self.decoder2 = buildNetwork2([decodeLayer2[0]+n_batch]+decodeLayer2[1:], type="decode", activation=activation)       
@@ -230,7 +230,7 @@ class scMultiClusterBatch(nn.Module):
                 lpbatch = lpbatch + torch.diag(torch.diag(z_num))
                 kl_loss = self.kldloss(lpbatch, lqbatch) 
                 if epoch+1 >= epochs * self.cutoff:
-                   loss = recon_loss1 + recon_loss2 + kl_loss * self.fi1
+                   loss = recon_loss1 + recon_loss2 + kl_loss * self.phi1
                 else:
                    loss = recon_loss1 + recon_loss2 #+ kl_loss
                 optimizer.zero_grad()
@@ -375,7 +375,7 @@ class scMultiClusterBatch(nn.Module):
                 lqbatch = lqbatch + torch.diag(torch.diag(z_num))
                 target2 = target2 + torch.diag(torch.diag(z_num))
                 kl_loss = self.kldloss(target2, lqbatch)
-                loss = cluster_loss * self.gamma + kl_loss * self.fi2 + recon_loss1 + recon_loss2
+                loss = cluster_loss * self.gamma + kl_loss * self.phi2 + recon_loss1 + recon_loss2
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(self.mu, 1)
                 optimizer.step()
