@@ -55,8 +55,9 @@ if __name__ == "__main__":
     parser.add_argument('--sigma1', default=2.5, type=float)
     parser.add_argument('--sigma2', default=1.5, type=float)
     parser.add_argument('--f1', default=2000, type=float)
-    parser.add_argument('--f2', default=100, type=float)
-    parser.add_argument('--filter', action='store_true', default=False)
+    parser.add_argument('--f2', default=2000, type=float)
+    parser.add_argument('--filter1', action='store_true', default=False)
+    parser.add_argument('--filter2', action='store_true', default=False)
     parser.add_argument('--nbatch', default=2, type=int)
     parser.add_argument('--run', default=1, type=int)
     args = parser.parse_args()
@@ -72,9 +73,12 @@ if __name__ == "__main__":
     data_mat.close()
     
     #Gene filter
-    if args.filter:
+    if args.filter1:
         importantGenes = geneSelection(x1, n=args.f1, plot=False)
         x1 = x1[:, importantGenes]
+    if args.filter2:
+        importantGenes = geneSelection(x2, n=args.f2, plot=False)
+        x2 = x2[:, importantGenes]
 
     # preprocessing scRNA-seq read counts matrix
     adata1 = sc.AnnData(x1)
