@@ -31,7 +31,7 @@ def buildNetwork2(layers, type, activation="relu"):
 
 class scMultiCluster(nn.Module):
     def __init__(self, input_dim1, input_dim2,
-            encodeLayer=[], decodeLayer1=[], decodeLayer2=[], tau=1.,
+            encodeLayer=[], decodeLayer1=[], decodeLayer2=[], tau=1., t=10,
             activation="elu", sigma1=2.5, sigma2=.1, alpha=1., gamma=1., phi1=0.0001, phi2=0.0001, cutoff = 0.5):
         super(scMultiCluster, self).__init__()
         self.tau=tau
@@ -45,6 +45,7 @@ class scMultiCluster(nn.Module):
         self.gamma = gamma
         self.phi1 = fi1
         self.phi2 = fi2
+        self.t = t
         self.encoder = buildNetwork2([input_dim1+input_dim2]+encodeLayer, type="encode", activation=activation)
         self.decoder1 = buildNetwork2(decodeLayer1, type="decode", activation=activation)
         self.decoder2 = buildNetwork2(decodeLayer2, type="decode", activation=activation)       
@@ -202,7 +203,8 @@ class scMultiCluster(nn.Module):
             recon_loss1_val = recon_loss1_val/num
             recon_loss2_val = recon_loss2_val/num
             kl_loss_val = kl_loss_val/num
-            print('Pretrain epoch {}, Total loss:{:.6f}, ZINB loss1:{:.6f}, ZINB loss2:{:.6f}, KL loss:{:.6f}'.format(epoch+1, loss_val, recon_loss1_val, recon_loss2_val, kl_loss_val))
+            if epoch%self.t == 0:
+               print('Pretrain epoch {}, Total loss:{:.6f}, ZINB loss1:{:.6f}, ZINB loss2:{:.6f}, KL loss:{:.6f}'.format(epoch+1, loss_val, recon_loss1_val, recon_loss2_val, kl_loss_val))
 
         if ae_save:
             torch.save({'ae_state_dict': self.state_dict(),
@@ -212,7 +214,7 @@ class scMultiCluster(nn.Module):
         newfilename = os.path.join(filename, 'FTcheckpoint_%d.pth.tar' % index)
         torch.save(state, newfilename)
 
-    def fit(self, X1, X_raw1, sf1, X2, X_raw2, sf2, y=None, lr=1., n_clusters = 4, t = 1,
+    def fit(self, X1, X_raw1, sf1, X2, X_raw2, sf2, y=None, lr=1., n_clusters = 4,
             batch_size=256, num_epochs=10, update_interval=1, tol=1e-3, save_dir=""):
         '''X: tensor data'''
         use_cuda = torch.cuda.is_available()
@@ -323,7 +325,7 @@ class scMultiCluster(nn.Module):
                 kl_loss_val += kl_loss.data * len(inputs1)
                 loss_val += loss.data * len(inputs1)
 
-            if epoch%t == 0:
+            if epoch%self.t == 0:
                print("#Epoch %d: Total: %.6f Clustering Loss: %.6f ZINB Loss1: %.6f ZINB Loss2: %.6f KL Loss: %.6f" % (
                      epoch + 1, loss_val / num, cluster_loss_val / num, recon_loss1_val / num, recon_loss2_val / num, kl_loss_val / num))
 
