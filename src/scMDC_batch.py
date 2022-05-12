@@ -50,9 +50,8 @@ def buildNetwork2(layers, type, activation="relu"):
 
 class scMultiClusterBatch(nn.Module):
     def __init__(self, input_dim1, input_dim2, n_batch,
-            encodeLayer=[], decodeLayer1=[], decodeLayer2=[], tau=1., t=10,
-            activation="elu", sigma1=2.5, sigma2=.1, alpha=1., gamma=1., phi1=0.0001, phi2=0.0001, cutoff = 0.5,
-            device="cuda"):
+            encodeLayer=[], decodeLayer1=[], decodeLayer2=[], tau=1., t=10, device = "cuda",
+            activation="elu", sigma1=2.5, sigma2=.1, alpha=1., gamma=1., phi1=0.0001, phi2=0.0001, cutoff = 0.5):
         super(scMultiClusterBatch, self).__init__()
         self.tau=tau
         self.input_dim1 = input_dim1
@@ -66,6 +65,7 @@ class scMultiClusterBatch(nn.Module):
         self.phi1 = phi1
         self.phi2 = phi2
         self.t=t
+        self.device = device
         self.encoder = buildNetwork2([input_dim1+input_dim2+n_batch]+encodeLayer, type="encode", activation=activation)
         self.decoder1 = buildNetwork2([decodeLayer1[0]+n_batch]+decodeLayer1[1:], type="decode", activation=activation)
         self.decoder2 = buildNetwork2([decodeLayer2[0]+n_batch]+decodeLayer2[1:], type="decode", activation=activation)       
@@ -79,7 +79,6 @@ class scMultiClusterBatch(nn.Module):
         self.NBLoss = NBLoss()
         self.mse = nn.MSELoss()
         self.z_dim = encodeLayer[-1]
-        self.device = device
 
     def save_model(self, path):
         torch.save(self.state_dict(), path)
@@ -162,10 +161,6 @@ class scMultiClusterBatch(nn.Module):
         return h0, num, lq, mean1, mean2, disp1, disp2, pi1, pi2
         
     def encodeBatch(self, X1, X2, B, batch_size=256):
-        use_cuda = torch.cuda.is_available()
-        if use_cuda:
-            self.to(self.device)
-            
         encoded = []
         self.eval()
         num = X1.shape[0]
@@ -200,9 +195,6 @@ class scMultiClusterBatch(nn.Module):
     def pretrain_autoencoder(self, X1, X_raw1, sf1, X2, X_raw2, sf2, B,
             batch_size=256, lr=0.001, epochs=400, ae_save=True, ae_weights='AE_weights.pth.tar'):
         num_batch = int(math.ceil(1.0*X1.shape[0]/batch_size))
-        use_cuda = torch.cuda.is_available()
-        if use_cuda:
-            self.to(self.device)
         dataset = TensorDataset(torch.Tensor(X1), torch.Tensor(X_raw1), torch.Tensor(sf1), torch.Tensor(X2), torch.Tensor(X_raw2), torch.Tensor(sf2), torch.Tensor(B))
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
         print("Pretraining stage")
@@ -262,9 +254,6 @@ class scMultiClusterBatch(nn.Module):
     def fit(self, X1, X_raw1, sf1, X2, X_raw2, sf2, B, y=None, lr=.1, n_clusters = 4, t=1,
             batch_size=256, num_epochs=10, update_interval=1, tol=1e-3, save_dir=""):
         '''X: tensor data'''
-        use_cuda = torch.cuda.is_available()
-        if use_cuda:
-            self.to(self.device)
         print("Clustering stage")
         X1 = torch.tensor(X1).to(self.device)
         X_raw1 = torch.tensor(X_raw1).to(self.device)
