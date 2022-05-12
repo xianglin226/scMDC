@@ -50,7 +50,7 @@ def buildNetwork2(layers, type, activation="relu"):
 
 class scMultiClusterBatch(nn.Module):
     def __init__(self, input_dim1, input_dim2, n_batch,
-            encodeLayer=[], decodeLayer1=[], decodeLayer2=[], tau=1.,
+            encodeLayer=[], decodeLayer1=[], decodeLayer2=[], tau=1., t=10,
             activation="elu", sigma1=2.5, sigma2=.1, alpha=1., gamma=1., phi1=0.0001, phi2=0.0001, cutoff = 0.5,
             device="cuda"):
         super(scMultiClusterBatch, self).__init__()
@@ -65,6 +65,7 @@ class scMultiClusterBatch(nn.Module):
         self.gamma = gamma
         self.phi1 = phi1
         self.phi2 = phi2
+        self.t=t
         self.encoder = buildNetwork2([input_dim1+input_dim2+n_batch]+encodeLayer, type="encode", activation=activation)
         self.decoder1 = buildNetwork2([decodeLayer1[0]+n_batch]+decodeLayer1[1:], type="decode", activation=activation)
         self.decoder2 = buildNetwork2([decodeLayer2[0]+n_batch]+decodeLayer2[1:], type="decode", activation=activation)       
@@ -247,10 +248,8 @@ class scMultiClusterBatch(nn.Module):
             recon_loss1_val = loss_val/X1.shape[0]
             recon_loss2_val = recon_loss2_val/X1.shape[0]
             kl_loss_val = kl_loss_val/X1.shape[0]
-                #print('Pretrain epoch [{}/{}], ZINB loss:{:.4f}, NB loss:{:.4f}, latent MSE loss:{:.8f}, MDS loss:{:.8f}, KL loss:{:.8f}'.format(
-                #batch_idx+1, epoch+1, recon_loss1.item(), recon_loss2.item(), recon_loss_latent.item(), mds_loss.item(), kl_loss.item()))
-            print('Pretrain epoch {}, Total loss:{:.6f}, ZINB loss:{:.6f}, NB loss:{:.6f}, KL loss:{:.6f}'.format(epoch+1, loss_val, recon_loss1_val, recon_loss2_val, kl_loss_val))
-                #print('Pretrain epoch [{}/{}], ZINB loss:{:.4f}, latent MSE loss:{:.8f}'.format(batch_idx+1, epoch+1, recon_loss1.item(), recon_loss_latent.item()))
+            if epoch%self.t == 0:
+               print('Pretrain epoch {}, Total loss:{:.6f}, ZINB loss:{:.6f}, NB loss:{:.6f}, KL loss:{:.6f}'.format(epoch+1, loss_val, recon_loss1_val, recon_loss2_val, kl_loss_val))
 
         if ae_save:
             torch.save({'ae_state_dict': self.state_dict(),
@@ -385,7 +384,7 @@ class scMultiClusterBatch(nn.Module):
                 kl_loss_val += kl_loss.data * len(inputs1)
                 train_loss = loss.data * len(inputs1)
 
-            if epoch%t == 0:
+            if epoch%self.t == 0:
                 print("#Epoch %d: Total: %.6f Clustering Loss: %.6f ZINB Loss: %.6f ZINB Loss2: %.6f KL Loss: %.6f" % (
                      epoch + 1, loss_val / num, cluster_loss_val / num, recon_loss1_val / num, recon_loss2_val / num, kl_loss_val / num))
 
