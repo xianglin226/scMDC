@@ -119,7 +119,7 @@ if __name__ == "__main__":
     model = scMultiClusterBatch(input_dim1=input_size1, input_dim2=input_size2, n_batch = args.nbatch, tau=args.tau,
                         encodeLayer=encodeLayer, decodeLayer1=decodeLayer1, decodeLayer2=decodeLayer2,
                         activation='elu', sigma1=args.sigma1, sigma2=args.sigma2, gamma=args.gamma,
-                        cutoff = args.cutoff, phi1=args.phi1, phi2=args.phi2).to(args.device)
+                        cutoff = args.cutoff, phi1=args.phi1, phi2=args.phi2, device=args.device).to(args.device)
     
     print(str(model))
     
