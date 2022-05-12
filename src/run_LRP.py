@@ -69,6 +69,7 @@ if __name__ == "__main__":
                         help='coefficient of the clustering perturbation loss')
     parser.add_argument('--lr', default=0.001, type=int)                   
     args = parser.parse_args()
+    parser.add_argument('--device', default='cuda')
     print(args)
     data_mat = h5py.File(args.data_file)
     x1 = np.array(data_mat['X1'])
@@ -128,7 +129,7 @@ if __name__ == "__main__":
     model = scMultiCluster(input_dim1=input_size1, input_dim2=input_size2, tau=args.tau,
                         encodeLayer=encodeLayer, decodeLayer1=decodeLayer1, decodeLayer2=decodeLayer2,
                         activation='elu', sigma1=args.sigma1, sigma2=args.sigma2, gamma=args.gamma, 
-                        cutoff = args.cutoff, phi1=args.phi1, phi2=args.phi2).cuda()
+                        cutoff = args.cutoff, phi1=args.phi1, phi2=args.phi2).to(args.device)
     
     print(str(model))
 
@@ -143,12 +144,12 @@ if __name__ == "__main__":
     n_clusters = np.unique(clust_ids).shape[0]
     print("n cluster is: " + str(n_clusters))
 
-    Z = model.encodeBatch(torch.tensor(adata1.X).cuda(), torch.tensor(adata2.X).cuda()).data.cpu().numpy()
+    Z = model.encodeBatch(torch.tensor(adata1.X).to(args.device), torch.tensor(adata2.X).to(args.device)).data.cpu().numpy()
     
     cluster_list = np.unique(clust_ids).astype(int).tolist()
     print(cluster_list)
 
-    model_explainer = LRP(model, X1=adata1.X, X2=adata2.X, Z=Z, clust_ids=clust_ids, n_clusters=n_clusters, beta=args.beta).cuda()
+    model_explainer = LRP(model, X1=adata1.X, X2=adata2.X, Z=Z, clust_ids=clust_ids, n_clusters=n_clusters, beta=args.beta).to(args.device)
     
     #for clust_c in [cluster_ind[0]]: #range(args.n_clusters):
     #    for clust_k in [cluster_ind[1]]: #range(clust_c+1, args.n_clusters):
