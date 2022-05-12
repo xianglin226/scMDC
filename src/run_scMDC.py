@@ -58,6 +58,7 @@ if __name__ == "__main__":
     parser.add_argument('--filter1', action='store_true', default=False, help='Do mRNA selection')
     parser.add_argument('--filter2', action='store_true', default=False, help='Do ADT/ATAC selection')
     parser.add_argument('--run', default=1, type=int)
+    parser.add_argument('--device', default='cuda')
     args = parser.parse_args()
     print(args)
     data_mat = h5py.File(args.data_file)
@@ -114,7 +115,7 @@ if __name__ == "__main__":
     model = scMultiCluster(input_dim1=input_size1, input_dim2=input_size2, tau=args.tau,
                         encodeLayer=encodeLayer, decodeLayer1=decodeLayer1, decodeLayer2=decodeLayer2,
                         activation='elu', sigma1=args.sigma1, sigma2=args.sigma2, gamma=args.gamma, 
-                        cutoff = args.cutoff, phi1=args.phi1, phi2=args.phi2).cuda()
+                        cutoff = args.cutoff, phi1=args.phi1, phi2=args.phi2).to(args.device)
     
     print(str(model))
     
@@ -138,7 +139,7 @@ if __name__ == "__main__":
     print('Pretraining time: %d seconds.' % int(time() - t0))
     
     #get k
-    latent = model.encodeBatch(torch.tensor(adata1.X).cuda(), torch.tensor(adata2.X).cuda())
+    latent = model.encodeBatch(torch.tensor(adata1.X).to(args.device), torch.tensor(adata2.X).to(args.device))
     latent = latent.cpu().numpy()
     if args.n_clusters == -1:
        n_clusters = GetCluster(latent, res=args.resolution, n=args.n_neighbors)
@@ -157,7 +158,7 @@ if __name__ == "__main__":
        np.savetxt(args.save_dir + "/" + str(args.run) + "_pred.csv", y_pred_, delimiter=",")
     
     if args.embedding_file:
-       final_latent = model.encodeBatch(torch.tensor(adata1.X).cuda(), torch.tensor(adata2.X).cuda())
+       final_latent = model.encodeBatch(torch.tensor(adata1.X).to(args.device), torch.tensor(adata2.X).to(args.device))
        final_latent = final_latent.cpu().numpy()
        np.savetxt(args.save_dir + "/" + str(args.run) + "_embedding.csv", final_latent, delimiter=",")
 
