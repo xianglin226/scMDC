@@ -31,7 +31,7 @@ def buildNetwork2(layers, type, activation="relu"):
 
 class scMultiCluster(nn.Module):
     def __init__(self, input_dim1, input_dim2,
-            encodeLayer=[], decodeLayer1=[], decodeLayer2=[], tau=1., t=10,
+            encodeLayer=[], decodeLayer1=[], decodeLayer2=[], tau=1., t=10, device="cuda",
             activation="elu", sigma1=2.5, sigma2=.1, alpha=1., gamma=1., phi1=0.0001, phi2=0.0001, cutoff = 0.5):
         super(scMultiCluster, self).__init__()
         self.tau=tau
@@ -46,6 +46,7 @@ class scMultiCluster(nn.Module):
         self.phi1 = fi1
         self.phi2 = fi2
         self.t = t
+        self.device = device
         self.encoder = buildNetwork2([input_dim1+input_dim2]+encodeLayer, type="encode", activation=activation)
         self.decoder1 = buildNetwork2(decodeLayer1, type="decode", activation=activation)
         self.decoder2 = buildNetwork2(decodeLayer2, type="decode", activation=activation)       
@@ -130,10 +131,6 @@ class scMultiCluster(nn.Module):
         return h0, num, lq, mean1, mean2, disp1, disp2, pi1, pi2
         
     def encodeBatch(self, X1, X2, batch_size=256):
-        use_cuda = torch.cuda.is_available()
-        if use_cuda:
-            self.cuda()
-            
         encoded = []
         self.eval()
         num = X1.shape[0]
@@ -157,9 +154,6 @@ class scMultiCluster(nn.Module):
     def pretrain_autoencoder(self, X1, X_raw1, sf1, X2, X_raw2, sf2, 
             batch_size=256, lr=0.001, epochs=400, ae_save=True, ae_weights='AE_weights.pth.tar'):
         num_batch = int(math.ceil(1.0*X1.shape[0]/batch_size))
-        use_cuda = torch.cuda.is_available()
-        if use_cuda:
-            self.cuda()
         dataset = TensorDataset(torch.Tensor(X1), torch.Tensor(X_raw1), torch.Tensor(sf1), torch.Tensor(X2), torch.Tensor(X_raw2), torch.Tensor(sf2))
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
         print("Pretraining stage")
@@ -171,12 +165,12 @@ class scMultiCluster(nn.Module):
             recon_loss2_val = 0
             kl_loss_val = 0
             for batch_idx, (x1_batch, x_raw1_batch, sf1_batch, x2_batch, x_raw2_batch, sf2_batch) in enumerate(dataloader):
-                x1_tensor = Variable(x1_batch).cuda()
-                x_raw1_tensor = Variable(x_raw1_batch).cuda()
-                sf1_tensor = Variable(sf1_batch).cuda()
-                x2_tensor = Variable(x2_batch).cuda()
-                x_raw2_tensor = Variable(x_raw2_batch).cuda()
-                sf2_tensor = Variable(sf2_batch).cuda()
+                x1_tensor = Variable(x1_batch).to(self.device)
+                x_raw1_tensor = Variable(x_raw1_batch).to(self.device)
+                sf1_tensor = Variable(sf1_batch).to(self.device)
+                x2_tensor = Variable(x2_batch).to(self.device)
+                x_raw2_tensor = Variable(x_raw2_batch).to(self.device)
+                sf2_tensor = Variable(sf2_batch).to(self.device)
                 zbatch, z_num, lqbatch, mean1_tensor, mean2_tensor, disp1_tensor, disp2_tensor, pi1_tensor, pi2_tensor = self.forwardAE(x1_tensor, x2_tensor)
                 recon_loss1 = self.zinb_loss(x=x_raw1_tensor, mean=mean1_tensor, disp=disp1_tensor, pi=pi1_tensor, scale_factor=sf1_tensor)
                 recon_loss2 = self.zinb_loss(x=x_raw2_tensor, mean=mean2_tensor, disp=disp2_tensor, pi=pi2_tensor, scale_factor=sf2_tensor)
@@ -217,16 +211,13 @@ class scMultiCluster(nn.Module):
     def fit(self, X1, X_raw1, sf1, X2, X_raw2, sf2, y=None, lr=1., n_clusters = 4,
             batch_size=256, num_epochs=10, update_interval=1, tol=1e-3, save_dir=""):
         '''X: tensor data'''
-        use_cuda = torch.cuda.is_available()
-        if use_cuda:
-            self.cuda()
         print("Clustering stage")
-        X1 = torch.tensor(X1).cuda()
-        X_raw1 = torch.tensor(X_raw1).cuda()
-        sf1 = torch.tensor(sf1).cuda()
-        X2 = torch.tensor(X2).cuda()
-        X_raw2 = torch.tensor(X_raw2).cuda()
-        sf2 = torch.tensor(sf2).cuda()
+        X1 = torch.tensor(X1).to(self.device)
+        X_raw1 = torch.tensor(X_raw1).to(self.device)
+        sf1 = torch.tensor(sf1).to(self.device)
+        X2 = torch.tensor(X2).to(self.device)
+        X_raw2 = torch.tensor(X_raw2).to(self.device)
+        sf2 = torch.tensor(sf2).to(self.device)
         self.mu = Parameter(torch.Tensor(n_clusters, self.z_dim), requires_grad=True)
         optimizer = optim.Adadelta(filter(lambda p: p.requires_grad, self.parameters()), lr=lr, rho=.95)
              
