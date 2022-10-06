@@ -13,13 +13,20 @@ Numpy 1.18.1
 
 h5py 2.9.0  
 
-All experiments of scMDC in this study are conducted on Nvidia Tesla P100 (16G) GPU.  
-scMDC takes about 5 minutes for clustering a dataset with 5000 cells.  
+All experiments of scMDC in this study are conducted on Nvidia Tesla P100 (16G) GPU.
+We suggest to install the dependencies in a conda environment (conda create -n scMDC).  
+It takes few minutes to install the dependencies.  
+scMDC takes about 3 minutes to cluster a dataset with 5000 cells.  
 
 # Run scMDC  
 1) Prepare the input data in h5 format. (See readme in 'dataset' folder)  
 2) Run scMDC according to the running script in "script" folder (Note the parameter settings if you work on mRNA+ATAC data and use run_scMDC_batch.py for multi-batch data clustering)  
-3) Run DE analysis by run_LRP.py based on the well-trained scMDC model (refer the LRP running script in "script" folder)
+3) Run DE analysis by run_LRP.py based on the well-trained scMDC model (refer the LRP running script in "script" folder)  
+
+# Output of scMDC  
+1) scMDC outputs a latent representation of data which can be used for further downstream analyses and visualized by t-SNE or Umap; 
+2) Multi-batch scMDC outputs a latent representation of integrated datasets on which the batch effects are corrected.  
+3) LRP outputs a gene rank which indicates the importances of genes for a given cluster and can be used for pathway analysis.  
 
 # Arguments
 --n_clusters: number of clusters (K); scMDC will estimate K if this arguments is set to -1.  
