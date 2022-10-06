@@ -13,8 +13,9 @@ Numpy 1.18.1
 
 h5py 2.9.0  
 
-All experiments of scMDC in this study are
-conducted on Nvidia Tesla P100 (16G) GPU.  
+All experiments of scMDC in this study are conducted on Nvidia Tesla P100 (16G) GPU.  
+scMDC takes about 5 minutes for clustering a dataset with 5000 cells.  
+
 # Run scMDC
 See the tutorial for details.
 
