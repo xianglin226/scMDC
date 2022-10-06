@@ -16,9 +16,7 @@ h5py 2.9.0
 All experiments of scMDC in this study are conducted on Nvidia Tesla P100 (16G) GPU.  
 scMDC takes about 5 minutes for clustering a dataset with 5000 cells.  
 
-# Run scMDC
-See the tutorial for details.
-
+# Run scMDC  
 1) Prepare the input data in h5 format. (See readme in 'dataset' folder)  
 2) Run scMDC according to the running script in "script" folder (Note the parameter settings if you work on mRNA+ATAC data and use run_scMDC_batch.py for multi-batch data clustering)  
 3) Run DE analysis by run_LRP.py based on the well-trained scMDC model (refer the LRP running script in "script" folder)
