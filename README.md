@@ -1,5 +1,8 @@
 # scMDC
 Single Cell Multi-omics deep clustering
+
+![Model structure](https://github.com/xianglin226/scMDC/blob/master/src/fig1.drawio.png?raw=true)  
+
 # Dependencies
 Python 3.8.1
 
