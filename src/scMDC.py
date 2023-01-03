@@ -218,7 +218,7 @@ class scMultiCluster(nn.Module):
         X2 = torch.tensor(X2).to(self.device)
         X_raw2 = torch.tensor(X_raw2).to(self.device)
         sf2 = torch.tensor(sf2).to(self.device)
-        self.mu = Parameter(torch.Tensor(n_clusters, self.z_dim), requires_grad=True)
+        self.mu = Parameter(torch.Tensor(n_clusters, self.z_dim), requires_grad=True).to(self.device)
         optimizer = optim.Adadelta(filter(lambda p: p.requires_grad, self.parameters()), lr=lr, rho=.95)
              
         print("Initializing cluster centers with kmeans.")
