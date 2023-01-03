@@ -273,8 +273,6 @@ class scMultiClusterBatch(nn.Module):
         self.y_pred = kmeans.fit_predict(Zdata.data.cpu().numpy())
         self.y_pred_last = self.y_pred
         self.mu.data.copy_(torch.Tensor(kmeans.cluster_centers_))
-        print(y.shape)
-        print(self.y_pred.shape)
         if y is not None:
             ami = np.round(metrics.adjusted_mutual_info_score(y, self.y_pred), 5)
             nmi = np.round(metrics.normalized_mutual_info_score(y, self.y_pred), 5)
