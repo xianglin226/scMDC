@@ -304,18 +304,6 @@ class scMultiClusterBatch(nn.Module):
                     final_epoch = epoch+1
                     print('Clustering   %d: AMI= %.4f, NMI= %.4f, ARI= %.4f' % (epoch+1, ami, nmi, ari))
 
-                # save current model
-                # if (epoch>0 and delta_label < tol) or epoch%10 == 0:
-                    # self.save_checkpoint({'epoch': epoch+1,
-                            # 'state_dict': self.state_dict(),
-                            # 'mu': self.mu,
-                            # 'p': p,
-                            # 'q': q,
-                            # 'y_pred': self.y_pred,
-                            # 'y_pred_last': self.y_pred_last,
-                            # 'y': y
-                            # }, epoch+1, filename=save_dir)
-
                 # check stop criterion
                 delta_label = np.sum(self.y_pred != self.y_pred_last).astype(np.float32) / num
                 self.y_pred_last = self.y_pred
@@ -323,6 +311,16 @@ class scMultiClusterBatch(nn.Module):
                     print('delta_label ', delta_label, '< tol ', tol)
                     print("Reach tolerance threshold. Stopping training.")
                     break
+                
+                # save current model
+                # if (epoch>0 and delta_label < tol) or epoch%10 == 0:
+                    # self.save_checkpoint({'epoch': epoch+1,
+                            # 'state_dict': self.state_dict(),
+                            # 'mu': self.mu,
+                            # 'y_pred': self.y_pred,
+                            # 'y_pred_last': self.y_pred_last,
+                            # 'y': y
+                            # }, epoch+1, filename=save_dir)
                 
             # train 1 epoch for clustering loss
             train_loss = 0.0
