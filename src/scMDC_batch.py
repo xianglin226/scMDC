@@ -263,8 +263,6 @@ class scMultiClusterBatch(nn.Module):
         sf2 = torch.tensor(sf2).to(self.device)
         B = torch.tensor(B).to(self.device)
         self.mu = Parameter(torch.Tensor(n_clusters, self.z_dim), requires_grad=True).to(self.device)
-        #self.mu = torch.Tensor(n_clusters, self.z_dim).to(self.device)
-        #optimizer = optim.Adadelta(filter(lambda p: p.requires_grad, self.parameters()), lr=lr, rho=.95)
         optimizer = optim.Adam(filter(lambda p: p.requires_grad, self.parameters()), lr=0.001)
              
         print("Initializing cluster centers with kmeans.")
@@ -290,16 +288,10 @@ class scMultiClusterBatch(nn.Module):
 
         for epoch in range(num_epochs):
             if epoch%update_interval == 0:
-                #print(self.mu)
                 # update the targe distribution p
                 Zdata = self.encodeBatch(X1, X2, B, batch_size=batch_size)
-                #q = self.soft_assign(Zdata)
-                #p = self.target_distribution(q).data
-                #self.y_pred = kmeans_predict(X=Zdata, cluster_centers = self.mu, distance='euclidean', device=torch.device('cuda:0'))
-                #self.y_pred = self.y_pred.data.cpu().numpy()
                 
                 # evalute the clustering performance
-                #self.y_pred = torch.argmax(q, dim=1).data.cpu().numpy()
                 dist, _ = self.kmeans_loss(Zdata)
                 self.y_pred = torch.argmin(dist, dim=1).data.cpu().numpy()
 
