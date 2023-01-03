@@ -10,7 +10,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 
-from scMultiCluster_kmeans_totalVI import scMultiCluster
+from scMDC import scMultiCluster
 import numpy as np
 import collections
 import h5py
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     parser.add_argument('-dl2','--decodeLayer2', nargs='+', default=[16,20])
     parser.add_argument('--sigma1', default=2.5, type=float)
     parser.add_argument('--sigma2', default=1.5, type=float)
-    parser.add_argument('--f1', default=2000, type=float, help='Number of mRNA after feature selection')
+    parser.add_argument('--f1', default=1000, type=float, help='Number of mRNA after feature selection')
     parser.add_argument('--f2', default=2000, type=float, help='Number of ADT/ATAC after feature selection')
     parser.add_argument('--filter1', action='store_true', default=False, help='Do mRNA selection')
     parser.add_argument('--filter2', action='store_true', default=False, help='Do ADT/ATAC selection')
