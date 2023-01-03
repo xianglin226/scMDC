@@ -251,7 +251,7 @@ class scMultiClusterBatch(nn.Module):
         newfilename = os.path.join(filename, 'FTcheckpoint_%d.pth.tar' % index)
         torch.save(state, newfilename)
 
-    def fit(self, X1, X_raw1, sf1, X2, X_raw2, sf2, B, y=None, lr=1., n_clusters = 4, t=1,
+    def fit(self, X1, X_raw1, sf1, X2, X_raw2, sf2, B, y=None, lr=1., n_clusters = 4,
             batch_size=256, num_epochs=10, update_interval=1, tol=1e-3, save_dir=""):
         '''X: tensor data'''
         print("Clustering stage")
