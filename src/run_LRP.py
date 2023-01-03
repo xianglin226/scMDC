@@ -67,9 +67,10 @@ if __name__ == "__main__":
                         help='margin of difference between logits')
     parser.add_argument('--lamda', default=100., type=float,
                         help='coefficient of the clustering perturbation loss')
-    parser.add_argument('--lr', default=0.001, type=int)                   
-    args = parser.parse_args()
+    parser.add_argument('--lr', default=0.001, type=int)
     parser.add_argument('--device', default='cuda')
+    
+    args = parser.parse_args()
     print(args)
     data_mat = h5py.File(args.data_file)
     x1 = np.array(data_mat['X1'])
