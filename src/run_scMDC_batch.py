@@ -11,7 +11,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 
-from scMultiCluster_kmeans_totalVI_batch import scMultiClusterBatch
+from scMDC_batch import scMultiClusterBatch
 import numpy as np
 import collections
 import h5py
