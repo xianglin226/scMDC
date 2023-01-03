@@ -262,7 +262,7 @@ class scMultiClusterBatch(nn.Module):
         X_raw2 = torch.tensor(X_raw2).to(self.device)
         sf2 = torch.tensor(sf2).to(self.device)
         B = torch.tensor(B).to(self.device)
-        self.mu = Parameter(torch.Tensor(n_clusters, self.z_dim), requires_grad=True)
+        self.mu = Parameter(torch.Tensor(n_clusters, self.z_dim), requires_grad=True).to(self.device)
         #self.mu = torch.Tensor(n_clusters, self.z_dim).to(self.device)
         #optimizer = optim.Adadelta(filter(lambda p: p.requires_grad, self.parameters()), lr=lr, rho=.95)
         optimizer = optim.Adam(filter(lambda p: p.requires_grad, self.parameters()), lr=0.001)
