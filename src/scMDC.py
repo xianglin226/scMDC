@@ -180,9 +180,8 @@ class scMultiCluster(nn.Module):
                 kl_loss = self.kldloss(lpbatch, lqbatch) 
                 if epoch+1 >= epochs * self.cutoff:
                    loss = recon_loss1 + recon_loss2 + kl_loss * self.phi1
-#                    loss = recon_loss1 + recon_loss2
                 else:
-                   loss = recon_loss1 + recon_loss2 #+ kl_loss
+                   loss = recon_loss1 + recon_loss2
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
