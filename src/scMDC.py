@@ -314,7 +314,7 @@ class scMultiCluster(nn.Module):
                 recon_loss1_val += recon_loss1.data * len(inputs1)
                 recon_loss2_val += recon_loss2.data * len(inputs2)
                 kl_loss_val += kl_loss.data * len(inputs1)
-                loss_val += loss.data * len(inputs1)
+                loss_val = cluster_loss_val + recon_loss1_val + recon_loss2_val + kl_loss_val
 
             if epoch%self.t == 0:
                print("#Epoch %d: Total: %.6f Clustering Loss: %.6f ZINB Loss1: %.6f ZINB Loss2: %.6f KL Loss: %.6f" % (
