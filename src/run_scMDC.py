@@ -166,4 +166,4 @@ if __name__ == "__main__":
     ami = np.round(metrics.adjusted_mutual_info_score(y, y_pred), 5)
     nmi = np.round(metrics.normalized_mutual_info_score(y, y_pred), 5)
     ari = np.round(metrics.adjusted_rand_score(y, y_pred), 5)
-    print('Final: AMI= %.4f, NMI= %.4f, ARI= %.4f' % (acc, ami, nmi, ari))
+    print('Final: AMI= %.4f, NMI= %.4f, ARI= %.4f' % (ami, nmi, ari))
