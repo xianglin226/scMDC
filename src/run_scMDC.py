@@ -35,9 +35,9 @@ if __name__ == "__main__":
     parser.add_argument('--tau', default=1., type=float,
                         help='fuzziness of clustering loss')                    
     parser.add_argument('--phi1', default=0.001, type=float,
-                        help='coefficient of KL loss')
+                        help='coefficient of KL loss in pretraining stage')
     parser.add_argument('--phi2', default=0.001, type=float,
-                        help='coefficient of KL loss')
+                        help='coefficient of KL loss in clustering stage')
     parser.add_argument('--update_interval', default=1, type=int)
     parser.add_argument('--tol', default=0.001, type=float)
     parser.add_argument('--lr', default=1., type=float)
