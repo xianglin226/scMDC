@@ -43,8 +43,8 @@ class scMultiCluster(nn.Module):
         self.sigma2 = sigma2
         self.alpha = alpha
         self.gamma = gamma
-        self.phi1 = fi1
-        self.phi2 = fi2
+        self.phi1 = phi1
+        self.phi2 = phi2
         self.t = t
         self.device = device
         self.encoder = buildNetwork2([input_dim1+input_dim2]+encodeLayer, type="encode", activation=activation)
