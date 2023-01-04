@@ -60,4 +60,7 @@ Structure: X1(RNA), X2(ADT or ATAC), Y(label, if exit), Batch (Batch indicator f
 --filter2: if do feature selection on ATAC. Default: No.  
 --f1: Number of high variable genes (in X1) used for clustering if doing the featue selection. Default: 2000  
 --f2: Number of high variable genes from ATAC (in X2) used for clustering if doing the featue selection. Default: 2000  
-*We denote 10X Single-Cell Multiome ATAC + Gene Expression technology as SMAGE-seq for convenience.
+*We denote 10X Single-Cell Multiome ATAC + Gene Expression technology as SMAGE-seq for convenience.  
+
+# Cite this work
+Lin, X., Tian, T., Wei, Z., & Hakonarson, H. (2022). Clustering of single-cell multi-omics data with a multimodal deep learning method. Nature Communications, 13(1), 1-18.
