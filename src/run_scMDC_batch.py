@@ -150,7 +150,7 @@ if __name__ == "__main__":
        n_clusters = GetCluster(latent, res=args.resolution, n=args.n_neighbors)
     else:
        print("n_cluster is defined as " + str(args.n_clusters))
-    n_clusters = args.n_clusters
+       n_clusters = args.n_clusters
 
     y_pred, _, _, _,_ = model.fit(X1=adata1.X, X_raw1=adata1.raw.X, sf1=adata1.obs.size_factors, 
         X2=adata2.X, X_raw2=adata2.raw.X, sf2=adata2.obs.size_factors, B=B, y=y,
