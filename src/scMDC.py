@@ -210,6 +210,9 @@ class scMultiCluster(nn.Module):
     def fit(self, X1, X_raw1, sf1, X2, X_raw2, sf2, y=None, lr=1., n_clusters = 4,
             batch_size=256, num_epochs=10, update_interval=1, tol=1e-3, save_dir=""):
         '''X: tensor data'''
+        use_cuda = torch.cuda.is_available()
+        if use_cuda:
+            self.to(self.device)
         print("Clustering stage")
         X1 = torch.tensor(X1).to(self.device)
         X_raw1 = torch.tensor(X_raw1).to(self.device)
@@ -217,7 +220,7 @@ class scMultiCluster(nn.Module):
         X2 = torch.tensor(X2).to(self.device)
         X_raw2 = torch.tensor(X_raw2).to(self.device)
         sf2 = torch.tensor(sf2).to(self.device)
-        self.mu = Parameter(torch.Tensor(n_clusters, self.z_dim), requires_grad=True).to(self.device)
+        self.mu = Parameter(torch.Tensor(n_clusters, self.z_dim), requires_grad=True)
         optimizer = optim.Adadelta(filter(lambda p: p.requires_grad, self.parameters()), lr=lr, rho=.95)
              
         print("Initializing cluster centers with kmeans.")
