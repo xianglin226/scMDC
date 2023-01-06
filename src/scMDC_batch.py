@@ -161,6 +161,9 @@ class scMultiClusterBatch(nn.Module):
         return h0, num, lq, mean1, mean2, disp1, disp2, pi1, pi2
         
     def encodeBatch(self, X1, X2, B, batch_size=256):
+        use_cuda = torch.cuda.is_available()
+        if use_cuda:
+            self.to(self.device)
         encoded = []
         self.eval()
         num = X1.shape[0]
