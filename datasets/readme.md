@@ -12,4 +12,6 @@ Other objects in the h5 files:
 2) GenesFromPeaks: feature names in the gene-to-cell matrix mapped from scATAC-seq (only in SMAGE-seq data)
 3) Genes: feature names in mRNA count matrix
 4) Cell types: cell type of each cell (if exist).
-5) Barcodes: cell barcodes (if exits)
+5) Barcodes: cell barcodes (if exits)  
+
+Note: for using filtered datasets (Normalized_filtred*), use X1_ and X2_ as inputs.  
