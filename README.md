@@ -1,5 +1,5 @@
 # scMDC
-Single Cell Multi-omics deep clustering (scMDC v1.0.1)
+Single Cell Multi-omics deep clustering (**scMDC v1.0.1**)
 
 ![Model structure](https://github.com/xianglin226/scMDC/blob/master/src/fig1_.png?raw=true)  
 
