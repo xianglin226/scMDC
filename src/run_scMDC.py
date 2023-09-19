@@ -59,12 +59,15 @@ if __name__ == "__main__":
     parser.add_argument('--filter2', action='store_true', default=False, help='Do ADT/ATAC selection')
     parser.add_argument('--run', default=1, type=int)
     parser.add_argument('--device', default='cuda')
+    parser.add_argument('--no_labels', action='store_true', default=False)
     args = parser.parse_args()
     print(args)
+    
     data_mat = h5py.File(args.data_file)
     x1 = np.array(data_mat['X1'])
     x2 = np.array(data_mat['X2'])
-    y = np.array(data_mat['Y'])
+    if not args.no_labels:
+         y = np.array(data_mat['Y'])
     data_mat.close()
 
     #Gene filter
@@ -77,7 +80,7 @@ if __name__ == "__main__":
         
     # preprocessing scRNA-seq read counts matrix
     adata1 = sc.AnnData(x1)
-    adata1.obs['Group'] = y
+    #adata1.obs['Group'] = y
 
     adata1 = read_dataset(adata1,
                      transpose=False,
@@ -90,7 +93,7 @@ if __name__ == "__main__":
                       logtrans_input=True)
     
     adata2 = sc.AnnData(x2)
-    adata2.obs['Group'] = y
+    #adata2.obs['Group'] = y
     adata2 = read_dataset(adata2,
                      transpose=False,
                      test_split=False,
@@ -147,23 +150,35 @@ if __name__ == "__main__":
        print("n_cluster is defined as " + str(args.n_clusters))
        n_clusters = args.n_clusters
 
-    y_pred, _, _, _, _ = model.fit(X1=adata1.X, X_raw1=adata1.raw.X, sf1=adata1.obs.size_factors, 
-        X2=adata2.X, X_raw2=adata2.raw.X, sf2=adata2.obs.size_factors, y=y,
-        n_clusters=n_clusters, batch_size=args.batch_size, num_epochs=args.maxiter, 
-        update_interval=args.update_interval, tol=args.tol, lr=args.lr, save_dir=args.save_dir)
+    if not args.no_labels:
+         y_pred, _ = model.fit(X1=adata1.X, X_raw1=adata1.raw.X, sf1=adata1.obs.size_factors, 
+                 X2=adata2.X, X_raw2=adata2.raw.X, sf2=adata2.obs.size_factors, y=y, t=1,
+                 n_clusters=n_clusters, batch_size=args.batch_size, num_epochs=args.maxiter, 
+                 update_interval=args.update_interval, tol=args.tol, lr=args.lr, save_dir=args.save_dir)
+    else:
+         y_pred, _ = model.fit(X1=adata1.X, X_raw1=adata1.raw.X, sf1=adata1.obs.size_factors, 
+                 X2=adata2.X, X_raw2=adata2.raw.X, sf2=adata2.obs.size_factors, y=None, t=1,
+                 n_clusters=n_clusters, batch_size=args.batch_size, num_epochs=args.maxiter, 
+                 update_interval=args.update_interval, tol=args.tol, lr=args.lr, save_dir=args.save_dir)
     print('Total time: %d seconds.' % int(time() - t0))
     
     if args.prediction_file:
-       y_pred_ = best_map(y, y_pred) - 1
-       np.savetxt(args.save_dir + "/" + str(args.run) + "_pred.csv", y_pred_, delimiter=",")
+       if not args.no_labels:
+             y_pred_ = best_map(y, y_pred) - 1
+             np.savetxt(args.save_dir + "/" + str(args.run) + "_pred.csv", y_pred_, delimiter=",")
+         else:
+             np.savetxt(args.save_dir + "/" + str(args.run) + "_pred.csv", y_pred, delimiter=",")
     
     if args.embedding_file:
        final_latent = model.encodeBatch(torch.tensor(adata1.X).to(args.device), torch.tensor(adata2.X).to(args.device))
        final_latent = final_latent.cpu().numpy()
        np.savetxt(args.save_dir + "/" + str(args.run) + "_embedding.csv", final_latent, delimiter=",")
-
-    y_pred_ = best_map(y, y_pred)
-    ami = np.round(metrics.adjusted_mutual_info_score(y, y_pred), 5)
-    nmi = np.round(metrics.normalized_mutual_info_score(y, y_pred), 5)
-    ari = np.round(metrics.adjusted_rand_score(y, y_pred), 5)
-    print('Final: AMI= %.4f, NMI= %.4f, ARI= %.4f' % (ami, nmi, ari))
+    
+    if not args.no_labels:
+         y_pred_ = best_map(y, y_pred)
+         ami = np.round(metrics.adjusted_mutual_info_score(y, y_pred), 5)
+         nmi = np.round(metrics.normalized_mutual_info_score(y, y_pred), 5)
+         ari = np.round(metrics.adjusted_rand_score(y, y_pred), 5)
+         print('Final: AMI= %.4f, NMI= %.4f, ARI= %.4f' % (ami, nmi, ari))
+    else:
+         print("No labels for evaluation!")
