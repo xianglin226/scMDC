@@ -372,4 +372,4 @@ class scMultiClusterBatch(nn.Module):
                 print("#Epoch %d: Total: %.6f Clustering Loss: %.6f ZINB Loss: %.6f ZINB Loss2: %.6f KL Loss: %.6f" % (
                      epoch + 1, loss_val / num, cluster_loss_val / num, recon_loss1_val / num, recon_loss2_val / num, kl_loss_val / num))
 
-        return self.y_pred, final_ami, final_nmi, final_ari, final_epoch
+        return self.y_pred, final_epoch
