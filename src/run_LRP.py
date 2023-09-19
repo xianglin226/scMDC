@@ -75,7 +75,7 @@ if __name__ == "__main__":
     data_mat = h5py.File(args.data_file)
     x1 = np.array(data_mat['X1'])
     x2 = np.array(data_mat['X2'])
-    y = np.array(data_mat['Y']) - 1
+    #y = np.array(data_mat['Y']) - 1
     data_mat.close()
     
 
@@ -90,7 +90,7 @@ if __name__ == "__main__":
         x2 = x2[:, importantGenes]
 
     adata1 = sc.AnnData(x1)
-    adata1.obs['Group'] = y
+    #adata1.obs['Group'] = y
 
     adata1 = read_dataset(adata1,
                      transpose=False,
@@ -103,7 +103,7 @@ if __name__ == "__main__":
                       logtrans_input=True)
     
     adata2 = sc.AnnData(x2)
-    adata2.obs['Group'] = y
+    #adata2.obs['Group'] = y
     adata2 = read_dataset(adata2,
                      transpose=False,
                      test_split=False,
