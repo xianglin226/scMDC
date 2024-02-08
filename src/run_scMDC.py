@@ -166,7 +166,7 @@ if __name__ == "__main__":
        if not args.no_labels:
              y_pred_ = best_map(y, y_pred) - 1
              np.savetxt(args.save_dir + "/" + str(args.run) + "_pred.csv", y_pred_, delimiter=",")
-         else:
+       else:
              np.savetxt(args.save_dir + "/" + str(args.run) + "_pred.csv", y_pred, delimiter=",")
     
     if args.embedding_file:
