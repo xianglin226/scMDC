@@ -1,4 +1,3 @@
-from munkres import Munkres
 import os
 import sys
 import math
