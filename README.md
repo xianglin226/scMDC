@@ -79,4 +79,4 @@ Structure: X1(RNA), X2(ADT or ATAC), Y(label, if exit), Batch (Batch indicator f
 Lin, X., Tian, T., Wei, Z., & Hakonarson, H. (2022). Clustering of single-cell multi-omics data with a multimodal deep learning method. Nature Communications, 13(1), 1-18.
 
 ## <a name="contact"></a>Contact
-Xiang Lin <xl456@njit.edu>
+Xiang Lin <xianglin226@gmail.edu>
